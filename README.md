@@ -23,14 +23,6 @@
 
 	This function plots the recurrence plot of the input recurrence matrix R and saves it as a file.png.
 
-
-3- anim_traj(y):
-
-* Inputs : numpy array (y)
-* Outputs : animated trajectory
-
-	This function plots the animated trajectory of the input coordinate array y with five consecutive red dots moving along the entire blue trajectory.
-
 **************************************************************
 *******************Module 2: symbolic_series******************
 **************************************************************
