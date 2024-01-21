@@ -28,7 +28,7 @@ from RASCoPy import recurrence, opti_epsi, symbolic_series
 #sys.path.append('/content/drive/MyDrive/Recurrence_Analysis/RASCoPy')
 #from . import recurrence, opti_epsi, symbolic_series
 
-def demo_LotkaVoltera():
+def demo_LotkaVoltera(method):
 
   X0 = np.array([1,0.17,0.01])
   sig =np.array([1,1.2,1.6])
@@ -59,12 +59,24 @@ def demo_LotkaVoltera():
   ax = fig.add_subplot(111, projection='3d')
   ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
   plt.title('LotkaVoltera trajectory in 3D')
-  plt.show()
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
 
   plt.figure()
-  plt.plot(times, y[:,0])
-  plt.plot(times, y[:,1])
-  plt.plot(times, y[:,2])
+  plt.plot(times, y[:,0], label='X coordinate')
+  plt.plot(times, y[:,1], label='Y coordinate')
+  plt.plot(times, y[:,2], label='Z coordinate')
 
   figu = go.Figure(data=[go.Scatter3d(x=y[:, 0] , y=y[:,1], z=y[:,2], mode='markers', marker=dict(size=5))])
   figu.update_layout(scene=dict(xaxis_title='X1', yaxis_title='X2', zaxis_title='X3'))
@@ -72,21 +84,340 @@ def demo_LotkaVoltera():
   plt.title('LotkaVoltera 3 coordinates function of time')
   plt.xlabel('Time')
   plt.ylabel('X,Y,Z coordinates')
-  plt.show()
+  plt.legend()
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
 
-  #recurrence.anim_traj(y)
+  recurrence.anim_traj(y)
 
   step = 0.001
-  epsi = opti_epsi.epsi_entropy(y, step)
-  #epsi = opti_epsi.epsi_utility(y, step)
-  R = recurrence.rec_mat(y, epsi)
-  recurrence.rec_plt(R)
+  test2=1
+  if method == 0:
+    epsi = opti_epsi.epsi_entropy(y, step)
+    test=1
+  elif method == 1:
+    epsi = opti_epsi.epsi_utility(y, step)
+    test=1
+  elif method == 2:
+    entropy = opti_epsi.epsi_entropy(y, step)
+    utility = opti_epsi.epsi_utility(y, step)
+    epsi = (entropy+utility)/2
+    test=1
+  elif method == 4:
+    test=0
 
-  serie = symbolic_series.symbolic_serie(R)
-  symbolic_series.colored_sym_serie(serie,y)
-  symbolic_series.plot_col_traj(serie,y)
+  while test==0:
+    epsilon = input("Please enter your epsilon value: ")
+    epsi = float(epsilon)
+    R = recurrence.rec_mat(y, epsi)
+    recurrence.rec_plt(R)
 
-  C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+    serie = symbolic_series.symbolic_serie(R)
+    symbolic_series.colored_sym_serie(serie,y)
+    symbolic_series.plot_col_traj(serie,y)
+
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+
+    ans = input("\nAre these results satisfying ? (Y/n): ")
+    if ans.lower() == 'y':
+      test=1
+      test2=0
+
+  if test == 1 and test2==1:
+    R = recurrence.rec_mat(y, epsi)
+    recurrence.rec_plt(R)
+
+    serie = symbolic_series.symbolic_serie(R)
+    symbolic_series.colored_sym_serie(serie,y)
+    symbolic_series.plot_col_traj(serie,y)
+
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+
+def demo_Lorenz(method):
+
+  T=2000
+  deltaT = 0.01
+  times = np.linspace(0, deltaT*T, T)
+
+  SIGMA = 10.0
+  RHO = 28.0
+  BETA = 8.0/3.0
+
+  y = np.zeros((3,T))
+  y0 = np.array([20, 5, -5]).flatten()
+  y[:,0]=y0
+
+  for i in range(T-1):
+      a=np.array([-SIGMA*y[0,i]+SIGMA*y[1,i], (RHO-y[2,i])*y[0,i]-1*y[1,i], y[1,i]*y[0,i]-BETA*y[2,i]])
+      b= deltaT
+      y[:,i+1] = y[:,i] + b*a
+
+  y = np.squeeze(y)
+  y = y.T
+
+  fig = plt.figure()
+  ax = fig.add_subplot(111, projection='3d')
+  ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
+  plt.title('LotkaVoltera trajectory in 3D')
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
+
+  plt.figure()
+  plt.plot(times, y[:,0], label='X coordinate')
+  plt.plot(times, y[:,1], label='Y coordinate')
+  plt.plot(times, y[:,2], label='Z coordinate')
+
+  figu = go.Figure(data=[go.Scatter3d(x=y[:, 0] , y=y[:,1], z=y[:,2], mode='markers', marker=dict(size=5))])
+  figu.update_layout(scene=dict(xaxis_title='X1', yaxis_title='X2', zaxis_title='X3'))
+  figu.update_layout(scene=dict(aspectmode="cube"))
+  plt.title('LotkaVoltera 3 coordinates function of time')
+  plt.xlabel('Time')
+  plt.ylabel('X,Y,Z coordinates')
+  plt.legend()
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
+
+  recurrence.anim_traj(y)
+
+  step = 0.1
+  test2 = 1
+  if method == 0:
+    epsi = opti_epsi.epsi_entropy(y, step)
+    test=1
+  elif method == 1:
+    epsi = opti_epsi.epsi_utility(y, step)
+    test=1
+  elif method == 2:
+    entropy = opti_epsi.epsi_entropy(y, step)
+    utility = opti_epsi.epsi_utility(y, step)
+    epsi = (entropy+utility)/2
+    test=1
+  elif method == 4:
+    test=0
+
+  while test==0:
+    epsilon = input("Please enter your epsilon value: ")
+    epsi = float(epsilon)
+    R = recurrence.rec_mat(y, epsi)
+    recurrence.rec_plt(R)
+
+    serie = symbolic_series.symbolic_serie(R)
+    symbolic_series.colored_sym_serie(serie,y)
+    symbolic_series.plot_col_traj(serie,y)
+
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+
+    ans = input("\nAre these results satisfying ? (Y/n): ")
+    if ans.lower() == 'y':
+      test=1
+      test2=0
+
+  if test == 1 and test2==1:
+    R = recurrence.rec_mat(y, epsi)
+    recurrence.rec_plt(R)
+
+    serie = symbolic_series.symbolic_serie(R)
+    symbolic_series.colored_sym_serie(serie,y)
+    symbolic_series.plot_col_traj(serie,y)
+
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+
+def RASCoPy(a, method):
+
+  import joblib
+  data = joblib.load("skeletons_labels.json")
+  num_frames = len(data['vid_name'])
+  diag = data['Diag']
+  vidname = data['vid_name']
+
+  video_name = []
+  video_name_init = []
+  video_name_diag = []
+
+  name = vidname[0]
+  video_name.append(name)
+  video_name_init.append(0)
+  video_name_diag.append(diag[0])
+  counter = 0
+  print("#%d vdeoo_name=%s video_name_init=%d"%(counter,video_name[counter],video_name_init[counter]))
+
+  for i in range(num_frames-1):
+      if vidname[i+1]!=vidname[i]:
+          counter += 1
+          video_name.append(vidname[i+1])
+          video_name_init.append(i+1)
+          video_name_diag.append(diag[i+1])
+          print("#%d vdeoo_name=%s video_name_init=%d duration of previous video:%d diagnose:%d"%(\
+              counter,\
+              video_name[counter],video_name_init[counter],video_name_init[counter]-video_name_init[counter-1],\
+              video_name_diag[counter]))
+
+  video_initial = []
+  video_duration = []
+  video_num = counter+1
+  video_initial.append(0)
+  for k in range(video_num-1):
+      if k>0:
+          video_initial.append(video_name_init[k])
+      video_duration.append(video_name_init[k+1]-video_name_init[k])
+  video_duration.append(num_frames-video_name_init[video_num-1])
+
+  video_list_joints = []
+  k=3 ## number of video
+  video_diagnosis = video_name_diag[k]
+  initial = video_initial[k]
+  duration = video_duration[k]
+  video_list_joints.append(data['joints3D'][initial:initial+duration,:,:])
+  print(video_list_joints[0][:,0,0])
+  print(np.shape(video_list_joints))
+  data_final = video_list_joints[0]
+  #quit()
+
+  shape__ = np.shape(video_list_joints)
+  num_time = shape__[1]
+
+
+  #t = np.array([0.1*np.ones(10)*i for i in range(100)]).flatten()
+  t = np.linspace(0,num_time,num_time)
+  b = np.zeros((num_time,3))
+
+  num_joints_shown = 25
+  x = np.zeros((num_joints_shown,num_time,3))
+  joint = np.arange(0,0+num_joints_shown,1)
+  #joint_num = range(num_joints_shown)#for k in range(num_joints_shown):
+  fig = plt.figure(figsize=(8,8))
+  for k in range(num_joints_shown):
+      x[k,:,0]=data_final[:,joint[k],0]
+      x[k,:,1]=data_final[:,joint[k],2]
+      x[k,:,2]=data_final[:,joint[k],1]
+
+  y = x[a,:,:]
+  T=y.shape[0]
+  times = np.linspace(0,T,T)
+
+  plt.figure()
+  plt.plot(times, y[:,0], color='red', label='X coordinate')
+  plt.plot(times, y[:,1], color='blue', label = 'Y coordinate')
+  plt.plot(times, y[:,2], color='green', label = 'Z coordinate')
+  plt.title("Joint mouvement on each coordinate")
+  plt.legend()
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
+
+  fig = plt.figure()
+  ax = fig.add_subplot(111, projection='3d')
+  ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
+  plt.title('Trajectory in 3D')
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
+
+  '''figu = go.Figure(data=[go.Scatter3d(x=y[:, 0] , y=y[:,1], z=y[:,2], mode='markers', marker=dict(size=5))])
+  figu.update_layout(scene=dict(xaxis_title='X1', yaxis_title='X2', zaxis_title='X3'))
+  figu.update_layout(scene=dict(aspectmode="cube"))
+  plt.title('3 coordinates function of time')
+  plt.xlabel('Time')
+  plt.ylabel('X,Y,Z coordinates')
+  plt.show(block=False)'''
+
+  recurrence.anim_traj(y)
+
+  step = 0.001
+  test2=1
+  if method == 0:
+    epsi = opti_epsi.epsi_entropy(y, step)
+    test=1
+  elif method == 1:
+    epsi = opti_epsi.epsi_utility(y, step)
+    test=1
+  elif method == 2:
+    entropy = opti_epsi.epsi_entropy(y, step)
+    utility = opti_epsi.epsi_utility(y, step)
+    epsi = (entropy+utility)/2
+    test=1
+  elif method == 4:
+    test=0
+
+  while test==0:
+    epsilon = input("Please enter your epsilon value: ")
+    epsi = float(epsilon)
+    R = recurrence.rec_mat(y, epsi)
+    recurrence.rec_plt(R)
+
+    serie = symbolic_series.symbolic_serie(R)
+    symbolic_series.colored_sym_serie(serie,y)
+    symbolic_series.plot_col_traj(serie,y)
+
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+
+    ans = input("\nAre these results satisfying ? (Y/n): ")
+    if ans.lower() == 'y':
+      test=1
+      test2=0
+
+  if test == 1 and test2==1:
+    R = recurrence.rec_mat(y, epsi)
+    recurrence.rec_plt(R)
+
+    serie = symbolic_series.symbolic_serie(R)
+    symbolic_series.colored_sym_serie(serie,y)
+    symbolic_series.plot_col_traj(serie,y)
+
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
 
 def demo_HD():
 

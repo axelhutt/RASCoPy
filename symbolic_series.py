@@ -9,7 +9,7 @@ Original file is located at
 
 import numpy as np
 import matplotlib.pyplot as plt
-from RASCoPy import recurrence
+#from RASCoPy import recurrence
 import os
 
 def symbolic_serie(R):
@@ -23,9 +23,14 @@ def symbolic_serie(R):
 
   for i in range(R.shape[0]):
     Indx = np.where(R[R.shape[0]-1-i, :]!=0)
-    Valmin = int(Serie[np.min(Indx[0])])
+    Valmin = 1000000000
+
+    for k in Indx[0]:
+      if Serie[k] <= Valmin:
+        Valmin = Serie[k]
+
     for j in Indx[0]:
-        if Valmin < Serie[j]:
+        if Valmin <= Serie[j]:
           Serie[Serie==Serie[j]] = Valmin
 
   #-----------------------------------------------------------------------------
@@ -86,19 +91,27 @@ def symbolic_serie(R):
 
   return newSerie
 
-def colored_sym_serie(serie,y):
+def colored_sym_serie(serie, y):
   y = np.array(y)
   position = 0
   palette = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'black', 'pink', 'brown', 'gray', 'turquoise', 'indigo', 'beige', 'olive', 'cyan', 'magenta', 'gold', 'silver', 'coral', 'lavender', 'chartreuse', 'orangered', 'aquamarine', 'skyblue', 'pumpkin', 'emerald']
-  if len(palette) > np.max(serie) :
-    fig, ax = plt.subplots()
-    for couleur in serie:
-        ax.barh(0, 1, color=palette[int(couleur)], height=0.2, left=position)
-        position += 1
 
+  if len(palette) > np.max(serie):
+    fig, ax = plt.subplots()
+
+    for couleur in serie:
+      ax.barh(0, 1, color=palette[int(couleur)], height=0.2, left=position)
+      position += 1
 
     ax.set_ylim(-0.5, 0.5)
     ax.axis('off')
+
+    ax2 = ax.twiny()
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xticks(np.arange(0, len(serie) + 1, 10) + 0.5)
+    ax2.set_xticklabels(np.arange(0, len(serie) + 1, 10))
+    ax2.tick_params(axis='x', which='both', bottom=True, top=False, labeltop = False, labelbottom=True)
+
     plt.show(block=False)
 
     rep = input("Do you want to save this colored symbolic serie plot ? (Y/n): ")
@@ -124,11 +137,15 @@ def plot_col_traj(serie,y):
     figure = plt.figure()
     if y.shape[1] == 3 :
       ax = figure.add_subplot(111, projection='3d')
-      for i in range(serie.shape[0]):
-        ax.scatter(y[i, 0],y[i,1],y[i,2], color=palette[int(serie[i])], marker='o')
+      ax.scatter(y[0, 0],y[0,1],y[0,2], color=palette[int(serie[0])], marker='o')
+      for i in range(serie.shape[0]-1):
+        ax.scatter(y[i+1, 0],y[i+1,1],y[i+1,2], color=palette[int(serie[i+1])], marker='o')
+        ax.plot(y[i:i+2, 0],y[i:i+2,1],y[i:i+2,2], color=palette[int(serie[i])])
     elif y.shape[1] == 2:
-      for i in range(serie.shape[0]):
-        plt.scatter(y[i,0], y[i,1], color=palette[int(serie[i])], marker = 'o')
+      plt.scatter(y[0,0], y[0,1], color=palette[int(serie[0])], marker = 'o')
+      for i in range(serie.shape[0]-1):
+        plt.scatter(y[i+1,0], y[i+1,1], color=palette[int(serie[i+1])], marker = 'o')
+        plt.plot(y[i:i+2,0], y[i:i+2,1], color = palette[int(serie[i])])
     elif y.shape[1] == 1:
       for i in range(serie.shape[0]):
         plt.scatter(y[i], 0, color=palette[int(serie[i])], marker='o')

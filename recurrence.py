@@ -12,7 +12,7 @@ from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 import os
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 
 def rec_mat(y, epsilon):
   y = np.array(y)
@@ -78,40 +78,48 @@ def rec_plt(R):
     print("Recurrence plot has been successfully saved")
 
 def anim_traj(y):
-  '''
+
+  y = np.array(y)
+
   fig = plt.figure()
   ax = fig.add_subplot(111, projection='3d')
+  sc = ax.scatter([], [], [], c='r', marker='o')
+  ax.plot(y[:, 0], y[:, 1], y[:, 2], c='b')
 
-  ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
+  ax.set_xlim(np.min(y[:, 0]), np.max(y[:, 0]))
+  ax.set_ylim(np.min(y[:, 1]), np.max(y[:, 1]))
+  ax.set_zlim(np.min(y[:, 2]), np.max(y[:, 2]))
 
-  num_red_points = 5
-  red_points, = ax.plot([], [], [], 'ro', markersize=8)
+  def init():
+      sc._offsets3d = (y[1, 0], y[1, 1], y[1, 2])
+      return sc,
 
   def update(frame):
-      start_frame = max(0, frame - num_red_points + 1)
-      end_frame = frame + 1
+      label1 = str(frame)
+      ax.set_title('Frame: %s' % label1)
+      alphas = 1.0 - np.arange(len(y)) / len(y)
+      sc._offsets3d = (y[frame-4:frame, 0], y[frame-4:frame, 1], y[frame-4:frame, 2])
+      sc.set_array(alphas[frame-4:frame])
+      return sc,
 
-      red_points.set_data(y[start_frame:end_frame, 0], y[start_frame:end_frame, 1])
-      red_points.set_3d_properties(y[start_frame:end_frame, 2])
+  ax.set_xlabel('X')
+  ax.set_ylabel('Y')
+  ax.set_zlabel('Z')
 
-      return red_points,
-
-  ani = FuncAnimation(fig, update, frames=y.shape[0], interval=50, blit=True)
+  ani = animation.FuncAnimation(fig, update, frames=range(len(y)), init_func=init, interval=100)
+  plt.tight_layout()
   plt.show(block=False)
 
   rep = input("Do you want to save this animation ? (Y/n)")
   if rep.lower() == 'y':
-    while True:
-      name_file = input("Please, give a name to your animation: ")
-      if not os.path.exists(f'{name_file}.mp4'):
-        break
-      else:
-          rep2 = input(f"The file '{name_file}.mp4' already exists. Do you want to replace it ? (Y/n)")
-      if rep2.lower() == 'y':
-        break
+      while True:
+          name_file = input("Please, give a name to your animation: ")
+          if not os.path.exists(f'{name_file}'):
+              break
+          else:
+              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n)")
+              if rep2.lower() == 'y':
+                  break
 
-    ani.save(f'{name_file}.mp4', writer='ffmpeg', fps=30, extra_args=['-vcodec', 'libx264'])
-    print(f"{name_file} has been successfully saved")
-
-
-  '''
+      ani.save(f'{name_file}.gif', writer='pillow', fps=30)
+      print(f"{name_file} has been successfully saved")

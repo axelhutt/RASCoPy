@@ -127,14 +127,14 @@ def epsi_entropy(y, step):
                     a=2
                     break
 
-        if a == 0 or a == 2:
-            with open(name_file, 'w') as fichier:
-                fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-        if a == 1:
-            with open(name_file, 'a') as fichier:
-                fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+      if a == 0 or a == 2:
+          with open(name_file, 'w') as fichier:
+              fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+      if a == 1:
+          with open(name_file, 'a') as fichier:
+              fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
 
-        print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+      print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
 
     return EpsiOptiH
 
@@ -278,20 +278,20 @@ def epsi_utility(y, step):
       print("Epsilon plot has been successfully saved")
 
       while True:
-          name_file = input("Please, give a name to your backup file: ")
-          if not os.path.exists(f'{name_file}.txt'):
-              a=0
-              break
-          else:
-              rep3 = input(f"The file '{name_file}' already exists. Do you want to write Espilon max inside? (Y/n): ")
-              if rep3.lower() == 'y':
-                  a=1
-                  break
-              else:
-                  rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
-                  if rep4.lower() == 'y':
-                      a=2
-                      break
+        name_file = input("Please, give a name to your backup file: ")
+        if not os.path.exists(f'{name_file}'):
+            a=0
+            break
+        else:
+            rep3 = input(f"The file '{name_file}' already exists. Do you want to write Espilon max inside? (Y/n): ")
+            if rep3.lower() == 'y':
+                a=1
+                break
+            else:
+                rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
+                if rep4.lower() == 'y':
+                    a=2
+                    break
 
       if a == 0 or a == 2:
           with open(name_file, 'w') as fichier:
