@@ -1,0 +1,8 @@
+Epsilon : 1.21
+
+------------- Complexity with the alphabet size method -------------
+Complexity alphabet size = 4.0
+------------- Complexity with the number of words method -------------
+Complexity number of words = 14
+------------- Complexity with the Lempel-Ziv method -------------
+Complexity Lempel-Ziv = 37
