@@ -1,4 +1,4 @@
-Recurrence Analysis and Symbolic Complexity in Python (RASCoPy) is an analysis
+*Recurrence Analysis and Symbolic Complexity in Python (RASCoPy)* is an analysis
 toolbox written by Gauthier Daubes and Axel Hut. An original implementation in 
 Matlab has been developed by Peter beim Graben. 
 
