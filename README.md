@@ -1,3 +1,26 @@
+Recurrence Analysis and Symbolic Complexity in Python (RASCoPy) is an analysis
+toolbox written by Gauthier Daubes and Axel Hut. An original implementation in 
+Matlab has been developed by Peter beim Graben. 
+
+The techniques implemented have been developed by Peter beim Graben and Axel Hutt
+and published in 
+
+- M. Fedotenkova, P. beim Graben, J. Sleigh, A. Hutt, 
+Time-Frequency Representations as Phase Space Reconstruction in Symbolic Recurrence Structure Analysis,
+In: I. Rojas, H. Pomares and O. Valenzuela (Eds.). Advances in Time Series Analysis and Forecasting, pp. 89-102 (2017) 
+
+- P. beim Graben, K. K. Sellers, F. Fröhlich and A. Hutt, Optimal estimation of recurrence structures from time series,
+Europhysics Letters 114(3): 38003 (2016)
+
+- P. beim Graben and A. Hutt, Detecting event-related recurrences by symbolic analysis: Applications to human language processing, 
+Philosphical Transactions of the Royal Society A 373:20140089 (2015)
+
+- P. beim Graben and A. Hutt, Detecting metastable states of dynamical systems by recurrence-based symbolic dynamics,
+Physical Review Letters 110: 154101 (2013) 
+
+
+
+
 'Package description'
 
 **************************************************************
