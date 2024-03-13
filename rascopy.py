@@ -337,7 +337,7 @@ def rascopy(start_frame=None, end_frame=None, dimensions=3):
       c=c+1
       if not os.path.exists(f'{back_file}'):
         with open(back_file, 'w') as fichier:
-          fichier.write("Analysis of a "+sex+" people. Stage : "+diag+".")
+          fichier.write("Analysis of a "+sex+" people. \nStage : "+diag+".\n\n")
         print(back_file," succesfully created !")
         break
       elif c==1:
@@ -431,18 +431,22 @@ def rascopy(start_frame=None, end_frame=None, dimensions=3):
             plt.title(f"Mouvement's mean of {nom} on each coordinate")
           plt.legend()
           plt.show(block=False)
-          rep = input("\nDo you want to save this plot ? (Y/n): ")
-          if rep.lower() == 'y':
-            while True:
-              name_file = input("Please, give a name to your plot: ")
-              if not os.path.exists(f'{name_file}.png'):
-                break
-              else:
-                  rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-              if rep2.lower() == 'y':
-                break
-            plt.savefig(f'{name_file}.png')
-            print("Plot has been successfully saved")
+          while(True):
+            rep = input("\nDo you want to save this plot ? (Y/n): ")
+            if rep.lower() == 'y':
+              while True:
+                name_file = input("Please, give a name to your plot: ")
+                if not os.path.exists(f'{name_file}.png'):
+                  break
+                else:
+                    rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+                if rep2.lower() == 'y':
+                  break
+              plt.savefig(f'{name_file}.png')
+              print("Plot has been successfully saved")
+              break
+            elif rep.lower() == 'n':
+              break
 
         if("2" in visu_list):
           fig = plt.figure()
@@ -459,18 +463,22 @@ def rascopy(start_frame=None, end_frame=None, dimensions=3):
             plt.ylabel(dim[2])
             plt.title('Trajectory in 2D')
           plt.show(block=False)
-          rep = input("\nDo you want to save this plot ? (Y/n): ")
-          if rep.lower() == 'y':
-            while True:
-              name_file = input("Please, give a name to your plot: ")
-              if not os.path.exists(f'{name_file}.png'):
-                break
-              else:
-                  rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-              if rep2.lower() == 'y':
-                break
-            plt.savefig(f'{name_file}.png')
-            print("Plot has been successfully saved")
+          while(True):
+            rep = input("\nDo you want to save this plot ? (Y/n): ")
+            if rep.lower() == 'y':
+              while True:
+                name_file = input("Please, give a name to your plot: ")
+                if not os.path.exists(f'{name_file}.png'):
+                  break
+                else:
+                    rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+                if rep2.lower() == 'y':
+                  break
+              plt.savefig(f'{name_file}.png')
+              print("Plot has been successfully saved")
+              break
+            elif rep.lower() == 'n':
+              break
 
         '''figu = go.Figure(data=[go.Scatter3d(x=y[:, 0] , y=y[:,1], z=y[:,2], mode='markers', marker=dict(size=5))])
         figu.update_layout(scene=dict(xaxis_title='X1', yaxis_title='X2', zaxis_title='X3'))

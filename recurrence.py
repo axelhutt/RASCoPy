@@ -31,23 +31,27 @@ def rec_mat(y, epsilon, visu=None, back_file=None):
         np.savetxt(fichier, R, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
       print(f"Recurrence matrix has been successfully saved in {back_file}")
     else:
-      rep = input("\nDo you want to save this recurrence matrix ? (Y/n): ")
-      if rep.lower() == 'y':
-        while True:
-          name_file = input("Please, give a name to your backup file: ")
-          if not os.path.exists(f'{name_file}'):
-            a=0
-            break
-          else:
-            rep3 = input(f"The file '{name_file}' already exists. Do you want to write your Recurrence matrix inside? (Y/n): ")
-            if rep3.lower() == 'y':
-              a=1
+      while(True):
+        rep = input("\nDo you want to save this recurrence matrix ? (Y/n): ")
+        if rep.lower() == 'y':
+          while True:
+            name_file = input("Please, give a name to your backup file: ")
+            if not os.path.exists(f'{name_file}'):
+              a=0
               break
             else:
-              rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
-              if rep4.lower() == 'y':
-                a=2
+              rep3 = input(f"The file '{name_file}' already exists. Do you want to write your Recurrence matrix inside? (Y/n): ")
+              if rep3.lower() == 'y':
+                a=1
                 break
+              else:
+                rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
+                if rep4.lower() == 'y':
+                  a=2
+                  break
+          break
+        elif rep.lower() == 'n':
+          break
 
         if a == 0 or a == 2:
           with open(name_file, 'w') as fichier:
@@ -74,18 +78,22 @@ def rec_plt(R):
   plt.ylabel('Samples')
   plt.show(block=False)
 
-  rep = input("Do you want to save this recurrence plot ? (Y/n): ")
-  if rep.lower() == 'y':
-    while True:
-      name_file = input("Please, give a name to your plot: ")
-      if not os.path.exists(f'{name_file}.png'):
-        break
-      else:
-          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-      if rep2.lower() == 'y':
-        break
-    plt.savefig(f'{name_file}.png')
-    print("Recurrence plot has been successfully saved")
+  while(True):
+    rep = input("Do you want to save this recurrence plot ? (Y/n): ")
+    if rep.lower() == 'y':
+      while True:
+        name_file = input("Please, give a name to your plot: ")
+        if not os.path.exists(f'{name_file}.png'):
+          break
+        else:
+            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+        if rep2.lower() == 'y':
+          break
+      plt.savefig(f'{name_file}.png')
+      print("Recurrence plot has been successfully saved")
+      break
+    elif rep.lower() == 'n':
+      break
 
 
 def anim_traj(y):
@@ -191,18 +199,21 @@ def col_rec_plt(serie, R):
           if col>row:
             plt.scatter(row, col, marker='.', color=palette[int(serie[col])]) 
     plt.show(block=False)
-
-    rep = input("Do you want to save this colored recurrence plot ? (Y/n): ")
-    if rep.lower() == 'y':
-      while True:
-        name_file = input("Please, give a name to your plot: ")
-        if not os.path.exists(f'{name_file}.png'):
-          break
-        else:
-            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-        if rep2.lower() == 'y':
-          break
-      plt.savefig(f'{name_file}.png')
-      print("Colored recurrence plot has been successfully saved")
+    while(True):
+      rep = input("Do you want to save this colored recurrence plot ? (Y/n): ")
+      if rep.lower() == 'y':
+        while True:
+          name_file = input("Please, give a name to your plot: ")
+          if not os.path.exists(f'{name_file}.png'):
+            break
+          else:
+              rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+          if rep2.lower() == 'y':
+            break
+        plt.savefig(f'{name_file}.png')
+        print("Colored recurrence plot has been successfully saved")
+        break
+      elif rep.lower() == 'n':
+        break
   else:
      print("Your data is too complex to plot the colored recurrence plot")

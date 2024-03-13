@@ -109,47 +109,50 @@ def epsi_entropy(y, step, visu=None, back_file=None):
     plt.ylabel('Entropy')
 
     plt.show(block=False)
-
-    rep = input("\nDo you want to save your results ? (Y/n): ")
-    if rep.lower() == 'y':
-      while True:
-        name_plot = input("Please, give a name to your plot: ")
-        if not os.path.exists(f'{name_plot}.png'):
-            break
-        else:
-            rep2 = input(f"The file '{name_plot}.png' already exists. Do you want to replace it? (Y/n): ")
-            if rep2.lower() == 'y':
-                break
-
-      plt.savefig(f'{name_plot}.png')
-      print("Epsilon plot has been successfully saved")
-
-      if back_file is not None:
-        with open(back_file, 'a') as fichier:
-          fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-        print(f"Optimal Epsilon with Entropy function has been successfully saved in '{back_file}'")
-      else :
+    while(True):
+      rep = input("\nDo you want to save your results ? (Y/n): ")
+      if rep.lower() == 'y':
         while True:
-          name_file = input("Please, give a name to your backup file: ")
-          if not os.path.exists(f'{name_file}'):
-            with open(name_file, 'w') as fichier:
-              fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-            print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
-            break
+          name_plot = input("Please, give a name to your plot: ")
+          if not os.path.exists(f'{name_plot}.png'):
+              break
           else:
-              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
-          if rep2.lower() == 'y':
-            with open(name_file, 'w') as fichier:
-              fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-            print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
-            break
-          else:
-            rep3 = input(f"Do you want to add your result in it ? (Y/n): ")
-          if rep3.lower() == 'y':
-            with open(name_file, 'a') as fichier:
-              fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-            print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
-            break
+              rep2 = input(f"The file '{name_plot}.png' already exists. Do you want to replace it? (Y/n): ")
+              if rep2.lower() == 'y':
+                  break
+
+        plt.savefig(f'{name_plot}.png')
+        print("Epsilon plot has been successfully saved")
+
+        if back_file is not None:
+          with open(back_file, 'a') as fichier:
+            fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+          print(f"Optimal Epsilon with Entropy function has been successfully saved in '{back_file}'")
+        else :
+          while True:
+            name_file = input("Please, give a name to your backup file: ")
+            if not os.path.exists(f'{name_file}'):
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+              print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+              break
+            else:
+                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+            if rep2.lower() == 'y':
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+              print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+              break
+            else:
+              rep3 = input(f"Do you want to add your result in it ? (Y/n): ")
+            if rep3.lower() == 'y':
+              with open(name_file, 'a') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+              print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+              break
+        break
+      elif rep.lower() == 'n':
+        break
 
   return EpsiOptiH
 
@@ -287,9 +290,9 @@ def epsi_utility(y, step, visu=None, back_file=None):
     plt.ylabel('Utility function')
 
     plt.show(block=False)
-
-    rep = input("\nDo you want to save your plot ? (Y/n): ")
-    if rep.lower() == 'y':
+    while(True):
+      rep = input("\nDo you want to save your result ? (Y/n): ")
+      if rep.lower() == 'y':
         while True:
           name_plot = input("Please, give a name to your plot: ")
           if not os.path.exists(f'{name_plot}.png'):
@@ -302,34 +305,35 @@ def epsi_utility(y, step, visu=None, back_file=None):
         plt.savefig(f'{name_plot}.png')
         print("Epsilon plot has been successfully saved")
 
-    rep = input("\nDo you want to save your result ? (Y/n): ")
-    if rep.lower() == 'y':
-      if back_file is not None:
-        with open(back_file, 'a') as fichier:
-            fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
-        print(f"Optimal Epsilon with Utility function has been successfully saved in '{back_file}'")
-      else :
-        while True:
-          name_file = input("Please, give a name to your backup file: ")
-          if not os.path.exists(f'{name_file}'):
-            with open(name_file, 'w') as fichier:
+        if back_file is not None:
+          with open(back_file, 'a') as fichier:
               fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
-            print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
-            break
-          else:
-              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
-          if rep2.lower() == 'y':
-            with open(name_file, 'w') as fichier:
-              fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
-            print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
-            break
-          else:
-            rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
-          if rep3.lower() == 'y':
-            with open(name_file, 'a') as fichier:
-              fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
-            print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
-            break
+          print(f"Optimal Epsilon with Utility function has been successfully saved in '{back_file}'")
+        else :
+          while True:
+            name_file = input("Please, give a name to your backup file: ")
+            if not os.path.exists(f'{name_file}'):
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
+              print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
+              break
+            else:
+                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+            if rep2.lower() == 'y':
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
+              print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
+              break
+            else:
+              rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+            if rep3.lower() == 'y':
+              with open(name_file, 'a') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
+              print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
+              break
+        break
+      elif rep.lower() == 'n':
+        break
 
 
   return EpsiOptiU
@@ -758,34 +762,39 @@ def opti_epsi_phi(y, length, step, visu=None, back_file=None):
     if visu is not None:
       print('\n-----------Optimal Epsilon with Phi function-----------')
       print('Optimal Epsilon = ',EpsiOptiH)
-      rep = input("\nDo you want to save your result ? (Y/n): ")
-      if rep.lower() == 'y':
-        if back_file is not None:
-          with open(back_file, 'a') as fichier:
-              fichier.write('\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-          print(f"Optimal Epsilon with Phi function has been successfully saved in '{back_file}'")
-        else :
-          while True:
-            name_file = input("Please, give a name to your backup file: ")
-            if not os.path.exists(f'{name_file}'):
-              with open(name_file, 'w') as fichier:
-                fichier.write('\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-              print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
-              break
-            else:
-                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
-            if rep2.lower() == 'y':
-              with open(name_file, 'w') as fichier:
-                fichier.write('\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-              print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
-              break
-            else:
-              rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
-            if rep3.lower() == 'y':
-              with open(name_file, 'a') as fichier:
-                fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-              print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
-              break
+      while(True):
+        rep = input("\nDo you want to save your result ? (Y/n): ")
+        if rep.lower() == 'y':
+          if back_file is not None:
+            with open(back_file, 'a') as fichier:
+                fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+            print(f"Optimal Epsilon with Phi function has been successfully saved in '{back_file}'")
+          else :
+            while True:
+              name_file = input("Please, give a name to your backup file: ")
+              if not os.path.exists(f'{name_file}'):
+                with open(name_file, 'w') as fichier:
+                  fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+                print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+                break
+              else:
+                  rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+              if rep2.lower() == 'y':
+                with open(name_file, 'w') as fichier:
+                  fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+                print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+                break
+              else:
+                rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+              if rep3.lower() == 'y':
+                with open(name_file, 'a') as fichier:
+                  fichier.write('\n\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+                print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+                break
+          break
+        elif rep.lower() == 'n':
+          break
+        
     return EpsiOptiH
     
         

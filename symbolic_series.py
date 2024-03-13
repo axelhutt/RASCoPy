@@ -68,36 +68,44 @@ def symbolic_serie(R, visu=None, back_file=None):
     print('\n-----------Symbolic serie-----------')
     print(newSerie)
     if back_file is not None:
-      rep = input("Do you want to save this symbolic series ? (Y/n): ")
-      if rep.lower() == 'y':
-        newSerie_array = np.array(list(newSerie))
-        with open(back_file, 'a') as fichier:
-          fichier.write('\n-----------Symbolic serie-----------' + '\n')
-          np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-        print(f"Symbolic serie has been successfully saved in {back_file}")
+      while(True):
+        rep = input("Do you want to save this symbolic series ? (Y/n): ")
+        if rep.lower() == 'y':
+          newSerie_array = np.array(list(newSerie))
+          with open(back_file, 'a') as fichier:
+            fichier.write('\n-----------Symbolic serie-----------' + '\n')
+            np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+          print(f"Symbolic serie has been successfully saved in {back_file}")
+          break
+        elif rep.lower() == 'n':
+          break
     else :
-      rep = input("Do you want to save this symbolic series ? (Y/n): ")
-      if rep.lower() == 'y':
-        while True:
-          name_file = input("Please, give a name to your backup file: ")
-          if not os.path.exists(f'{name_file}'):
-            break
-          else:
-              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
-          if rep2.lower() == 'y':
-            with open(name_file, 'w') as fichier:
-              fichier.write('\n-----------Symbolic serie-----------' + '\n')
-            np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-            print(f"Symbolic serie has been successfully saved in {name_file}")
-            break
-          else:
-            rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
-          if rep3.lower() == 'y':
-            with open(name_file, 'a') as fichier:
-              fichier.write('\n-----------Symbolic serie-----------' + '\n')
-            np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-            print(f"Symbolic serie has been successfully saved in {name_file}")
-            break
+      while(True):
+        rep = input("Do you want to save this symbolic series ? (Y/n): ")
+        if rep.lower() == 'y':
+          while True:
+            name_file = input("Please, give a name to your backup file: ")
+            if not os.path.exists(f'{name_file}'):
+              break
+            else:
+                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+            if rep2.lower() == 'y':
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Symbolic serie-----------' + '\n')
+              np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+              print(f"Symbolic serie has been successfully saved in {name_file}")
+              break
+            else:
+              rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+            if rep3.lower() == 'y':
+              with open(name_file, 'a') as fichier:
+                fichier.write('\n-----------Symbolic serie-----------' + '\n')
+              np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+              print(f"Symbolic serie has been successfully saved in {name_file}")
+              break
+          break
+        elif rep.lower() == 'n':
+          break
 
   return newSerie
 
@@ -130,22 +138,26 @@ def colored_sym_serie(serie, y):
     plt.show(block=False)
 
     print('\n-----------Colored symbolic serie-----------')
-    rep = input("Do you want to save this colored symbolic serie plot ? (Y/n): ")
-    if rep.lower() == 'y':
-      while True:
-        name_file = input("Please, give a name to your plot: ")
-        if not os.path.exists(f'{name_file}.png'):
-          break
-        else:
-            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-        if rep2.lower() == 'y':
-          break
-      plt.savefig(f'{name_file}.png')
-      print("Colored symbolic serie plot has been successfully saved")
+    while(True):
+      rep = input("Do you want to save this colored symbolic serie plot ? (Y/n): ")
+      if rep.lower() == 'y':
+        while True:
+          name_file = input("Please, give a name to your plot: ")
+          if not os.path.exists(f'{name_file}.png'):
+            break
+          else:
+              rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+          if rep2.lower() == 'y':
+            break
+        plt.savefig(f'{name_file}.png')
+        print("Colored symbolic serie plot has been successfully saved")
+        break
+      elif rep.lower() == 'n':
+        break
   else:
     print("Your data is too complexe to plot the colored symbolic serie")
 
-def plot_col_traj(serie,y):
+def plot_col_traj(serie, y):
   y = np.array(y)
 
   palette = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'black', 'pink', 'brown', 'gray', 'turquoise', 'indigo', 'beige', 'olive', 'cyan', 'magenta', 'gold', 'silver', 'coral', 'lavender', 'chartreuse', 'orangered', 'aquamarine', 'skyblue', 'pumpkin', 'emerald']
@@ -223,18 +235,23 @@ def plot_col_traj(serie,y):
     print("Your data is too complexe to color a trajectory")
 
   print('\n-----------Colored trajectory-----------')
-  rep = input("Do you want to save this colored trajectory ? (Y/n): ")
-  if rep.lower() == 'y':
-    while True:
-      name_file = input("Please, give a name to your plot: ")
-      if not os.path.exists(f'{name_file}.png'):
-        break
-      else:
-          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-      if rep2.lower() == 'y':
-        break
-    plt.savefig(f'{name_file}.png')
-    print("Colored trajectory has been successfully saved")
+  while(True):
+    rep = input("Do you want to save this colored trajectory ? (Y/n): ")
+    if rep.lower() == 'y':
+      while True:
+        name_file = input("Please, give a name to your plot: ")
+        if not os.path.exists(f'{name_file}.png'):
+          break
+        else:
+            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+        if rep2.lower() == 'y':
+          break
+      figure.savefig(f'{name_file}.png')
+      figure2.savefig(f'{name_file}_2D.png')
+      print("Colored trajectory has been successfully saved")
+      break
+    elif rep.lower()=='n':
+       break
 
 
 def complexity(serie, visu=None, back_file=None):
@@ -305,47 +322,55 @@ def complexity(serie, visu=None, back_file=None):
       print('Complexity Lempel-Ziv = ' + str(C_LZ))
       print('\n')
       if back_file is not None:
-        rep = input("Do you want to save this complexity measures ? (Y/n): ")
-        if rep.lower() == 'y':
-          with open(back_file, 'a') as fichier:
-            fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
-            fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
-            fichier.write('\n------------- Complexity with the number of words method -------------\n')
-            fichier.write('Complexity number of words = ' + str(C_nbr_words))
-            fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
-            fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
-          print(f"Complexity measures have been successfully saved in {back_file}")
+        while(True):
+          rep = input("Do you want to save this complexity measures ? (Y/n): ")
+          if rep.lower() == 'y':
+            with open(back_file, 'a') as fichier:
+              fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
+              fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
+              fichier.write('\n------------- Complexity with the number of words method -------------\n')
+              fichier.write('Complexity number of words = ' + str(C_nbr_words))
+              fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
+              fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ) + '\n')
+            print(f"Complexity measures have been successfully saved in {back_file}")
+            break
+          elif rep.lower() == 'n':
+             break
       else :
-        rep = input("Do you want to save this complexity measures ? (Y/n): ")
-        if rep.lower() == 'y':
-          while True:
-            name_file = input("Please, give a name to your backup file: ")
-            if not os.path.exists(f'{name_file}'):
-              break
-            else:
-                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
-            if rep2.lower() == 'y':
-              with open(name_file, 'w') as fichier:
-                fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
-                fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
-                fichier.write('\n------------- Complexity with the number of words method -------------\n')
-                fichier.write('Complexity number of words = ' + str(C_nbr_words))
-                fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
-                fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
-              print(f"Complexity measures have been successfully saved in {name_file}")
-              break
-            else:
-              rep3 = input(f"Do you want to add your complexity measures in it ? (Y/n): ")
-            if rep3.lower() == 'y':
-              with open(name_file, 'a') as fichier:
-                fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
-                fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
-                fichier.write('\n------------- Complexity with the number of words method -------------\n')
-                fichier.write('Complexity number of words = ' + str(C_nbr_words))
-                fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
-                fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
-              print(f"Complexity measures have been successfully saved in {name_file}")
-              break
+        while(True):
+          rep = input("Do you want to save this complexity measures ? (Y/n): ")
+          if rep.lower() == 'y':
+            while True:
+              name_file = input("Please, give a name to your backup file: ")
+              if not os.path.exists(f'{name_file}'):
+                break
+              else:
+                  rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+              if rep2.lower() == 'y':
+                with open(name_file, 'w') as fichier:
+                  fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
+                  fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
+                  fichier.write('\n------------- Complexity with the number of words method -------------\n')
+                  fichier.write('Complexity number of words = ' + str(C_nbr_words))
+                  fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
+                  fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ) + '\n')
+                print(f"Complexity measures have been successfully saved in {name_file}")
+                break
+              else:
+                rep3 = input(f"Do you want to add your complexity measures in it ? (Y/n): ")
+              if rep3.lower() == 'y':
+                with open(name_file, 'a') as fichier:
+                  fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
+                  fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
+                  fichier.write('\n------------- Complexity with the number of words method -------------\n')
+                  fichier.write('Complexity number of words = ' + str(C_nbr_words))
+                  fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
+                  fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ)+ '\n')
+                print(f"Complexity measures have been successfully saved in {name_file}")
+                break
+            break
+          elif rep.lower() == 'n':
+            break
 
     return C_alphabet_size, C_nbr_words, C_LZ
 
@@ -494,57 +519,22 @@ def complexity_shuffle(y, step, count=100, back_file = None):
 
 
   print('\n-----------Complexity analysis-----------')
-  rep = input("Do you want to save this analysis ? (Y/n): ")
-  if rep.lower() == 'y':
-    while True:
-      name_file = input("Please, give a name to your plot: ")
-      if not os.path.exists(f'{name_file}.png'):
-        break
-      else:
-          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-      if rep2.lower() == 'y':
-        break
-    fig.savefig(f'{name_file}_dot.png')
-    fig2.savefig(f'{name_file}_bar.png')
-
-    if back_file != None:
-      with open(back_file, 'a') as fichier:
-        fichier.write('\n------------- Mann Withney U T-Test -------------\n')
-        fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}')
-        fichier.write(backa)
-        fichier.write(f'\nP value for Number of Words = {p_value_words}')
-        fichier.write(backw)
-        fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}')
-        fichier.write(backl)
-      print(f"T-test results have been successfully saved in {back_file}")
-    else: 
+  while(True):
+    rep = input("Do you want to save this analysis ? (Y/n): ")
+    if rep.lower() == 'y':
       while True:
-        name_file = input("Please, give a name to your backup file: ")
-        if not os.path.exists(f'{name_file}'):
-          a=0
+        name_file = input("Please, give a name to your plot: ")
+        if not os.path.exists(f'{name_file}.png'):
           break
         else:
-          rep3 = input(f"The file '{name_file}' already exists. Do you want to write your t-test results inside? (Y/n): ")
-          if rep3.lower() == 'y':
-            a=1
-            break
-          else:
-            rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
-            if rep4.lower() == 'y':
-              a=2
-              break
-      if a == 0 or a == 2:
-        with open(name_file, 'w') as fichier:
-          fichier.write('\n\n------------- Mann Withney U T-Test -------------\n')
-          fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}\n')
-          fichier.write(backa)
-          fichier.write(f'\nP value for Number of Words = {p_value_words}\n')
-          fichier.write(backw)
-          fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}\n')
-          fichier.write(backl)
-        print(f"T-test results have been successfully saved in {name_file}")
-      if a == 1:
-        with open(name_file, 'a') as fichier:
+            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+        if rep2.lower() == 'y':
+          break
+      fig.savefig(f'{name_file}_dot.png')
+      fig2.savefig(f'{name_file}_bar.png')
+
+      if back_file != None:
+        with open(back_file, 'a') as fichier:
           fichier.write('\n------------- Mann Withney U T-Test -------------\n')
           fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}')
           fichier.write(backa)
@@ -552,6 +542,45 @@ def complexity_shuffle(y, step, count=100, back_file = None):
           fichier.write(backw)
           fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}')
           fichier.write(backl)
-        print(f"T-test results have been successfully saved in {name_file}")
+        print(f"T-test results have been successfully saved in {back_file}")
+      else: 
+        while True:
+          name_file = input("Please, give a name to your backup file: ")
+          if not os.path.exists(f'{name_file}'):
+            a=0
+            break
+          else:
+            rep3 = input(f"The file '{name_file}' already exists. Do you want to write your t-test results inside? (Y/n): ")
+            if rep3.lower() == 'y':
+              a=1
+              break
+            else:
+              rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
+              if rep4.lower() == 'y':
+                a=2
+                break
+        if a == 0 or a == 2:
+          with open(name_file, 'w') as fichier:
+            fichier.write('\n\n------------- Mann Withney U T-Test -------------\n')
+            fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}\n')
+            fichier.write(backa)
+            fichier.write(f'\nP value for Number of Words = {p_value_words}\n')
+            fichier.write(backw)
+            fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}\n')
+            fichier.write(backl)
+          print(f"T-test results have been successfully saved in {name_file}")
+        if a == 1:
+          with open(name_file, 'a') as fichier:
+            fichier.write('\n------------- Mann Withney U T-Test -------------\n')
+            fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}')
+            fichier.write(backa)
+            fichier.write(f'\nP value for Number of Words = {p_value_words}')
+            fichier.write(backw)
+            fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}')
+            fichier.write(backl)
+          print(f"T-test results have been successfully saved in {name_file}")
 
-    print("Complexity analysis has been successfully saved")
+      print("Complexity analysis has been successfully saved")
+      break
+    elif rep.lower() == 'n':
+      break
