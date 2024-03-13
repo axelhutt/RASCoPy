@@ -13,79 +13,92 @@ import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 import io
 import os
+from RASCoPy import symbolic_series
+import random
 
-def epsi_entropy(y, step):
-    y = np.array(y)
-    epsi = 0
-    D = cdist(y, y, 'euclidean')
-    nbr_epsi = int(math.ceil(np.max(D))/step)
+def epsi_entropy(y, step, visu=None, back_file=None):
+  y = np.array(y)
+  epsi = 0
+  D = cdist(y, y, 'euclidean')
+  nbr_epsi = int(math.ceil(np.max(D))/step)
 
-    Entropy = np.zeros(nbr_epsi)
-    Epsi = np.zeros(nbr_epsi)
+  Entropy = np.zeros(nbr_epsi)
+  Epsi = np.zeros(nbr_epsi)
 
-    for e in range(nbr_epsi):
-        epsi = epsi + step
-        R = np.array(D<epsi)
-        R=R.astype(int)
+  for e in range(nbr_epsi):
+    epsi = epsi + step
+    R = np.array(D<epsi)
+    R=R.astype(int)
 
-        R=np.tril(R)
+    #R=np.tril(R)
 
-        #------------------------------------------------------------------------------
-        #Rewriting grammar
-        Serie=np.zeros((R.shape[1]))
+    #------------------------------------------------------------------------------
+    #Rewriting grammar
+    Serie=np.zeros((R.shape[1]))
 
-        for i in range(R.shape[1]):
-          Serie[i]=i+1
+    for i in range(R.shape[1]):
+      Serie[i]=i+1
 
-        for i in range(R.shape[0]):
-          Indx = np.where(R[R.shape[0]-1-i, :]!=0)
-          Valmin = int(Serie[np.min(Indx[0])])
-          for j in Indx[0]:
-              if Valmin < Serie[j]:
-                Serie[Serie==Serie[j]] = Valmin
+    for i in range(R.shape[0]):
+      Indx = np.where(R[R.shape[0]-1-i, :]!=0)
+      Valmin = 1000000000
 
-        #-----------------------------------------------------------------------------
-        #Writing zeros
-        newSerie = np.array(Serie)
-        for i in range(Serie.shape[0]):
-          if i != 0 and i != Serie.shape[0]-1:
-            if Serie[i-1]!=Serie[i] and Serie[i]!=Serie[i+1]:
-              newSerie[i]=0
-          if i==0:
-            if Serie[i]!=Serie[i+1] and Serie[i]!=Serie[Serie.shape[0]-1]:
-              newSerie[i]=0
-          if i==Serie.shape[0]-1:
-            if Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]:
-              newSerie[i]=0
+      for k in Indx[0]:
+        if Serie[k] <= Valmin:
+          Valmin = Serie[k]
 
-        #-----------------------------------------------------------------------------
-        #Writing continuous number's sequence
-        sort = 0
-        Ser = np.sort(newSerie)
-        S = np.unique(Ser)
-        for i in S:
-          newSerie = np.where(newSerie == i, sort, newSerie)
-          sort = sort+1
+      for j in Indx[0]:
+          if Valmin <= Serie[j]:
+            Serie[Serie==Serie[j]] = Valmin
 
-        #Entropy
-        Serie=newSerie
-        Serie = Serie.astype(int)
-        p = np.array(np.unique(Serie).shape[0])
-        H=0
-        occurrences = np.bincount(Serie)
-        for valeur, nb_occurrences in enumerate(occurrences):
-            if nb_occurrences > 0:
-                pi = nb_occurrences/Serie.shape[0]
-                H=H+pi*np.log2(pi)
+    #-----------------------------------------------------------------------------
+    #Writing zeros
+    newSerie = np.array(Serie)
+    for i in range(Serie.shape[0]):
+      if i != 0 and i != Serie.shape[0]-1:
+        if Serie[i-1]!=Serie[i] and Serie[i]!=Serie[i+1]:
+          newSerie[i]=0
+      if i==0:
+        if (Serie[i]!=Serie[i+1] and Serie[i]!=Serie[Serie.shape[0]-1]) and np.count_nonzero(Serie == Serie[i])==1:
+          newSerie[i]=0
+      if i==Serie.shape[0]-1:
+        if (Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]) and np.count_nonzero(Serie == Serie[i])==1:
+          newSerie[i]=0
+    for i in newSerie:
+      if np.count_nonzero(newSerie == i) <= 2:
+          newSerie[np.where(newSerie == i)] = 0
 
-        Hneg = -H
-        Entropy[e]= Hneg
-        Epsi[e] = epsi
+    #-----------------------------------------------------------------------------
+    #Writing continuous number's sequence
+    sort = 1
+    Ser = np.sort(newSerie)
+    S = np.unique(Ser)
+    for i in S:
+      if i != 0:
+        newSerie = np.where(newSerie == i, sort, newSerie)
+        sort = sort+1
 
-    # Results epsilon
-    Hmax = np.max(Entropy)
-    IndxHmax = np.argmax(Entropy)
-    EpsiOptiH = Epsi[IndxHmax]
+    #Entropy
+    Serie=newSerie
+    Serie = Serie.astype(int)
+    p = np.array(np.unique(Serie).shape[0])
+    H=0
+    occurrences = np.bincount(Serie)
+    for valeur, nb_occurrences in enumerate(occurrences):
+        if nb_occurrences > 0:
+            pi = nb_occurrences/Serie.shape[0]
+            H=H+pi*np.log2(pi)
+
+    Hneg = -H
+    Entropy[e]= Hneg
+    Epsi[e] = epsi
+
+  # Results epsilon
+  Hmax = np.max(Entropy)
+  IndxHmax = np.argmax(Entropy)
+  EpsiOptiH = Epsi[IndxHmax]
+
+  if visu is not None:
     print('\n---------Entropy Optimal Epsilon----------')
     print('Epsilon with maximum Entropy =', round(EpsiOptiH, 3))
 
@@ -111,34 +124,36 @@ def epsi_entropy(y, step):
       plt.savefig(f'{name_plot}.png')
       print("Epsilon plot has been successfully saved")
 
-      while True:
-        name_file = input("Please, give a name to your backup file: ")
-        if not os.path.exists(f'{name_file}'):
-            a=0
+      if back_file is not None:
+        with open(back_file, 'a') as fichier:
+          fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+        print(f"Optimal Epsilon with Entropy function has been successfully saved in '{back_file}'")
+      else :
+        while True:
+          name_file = input("Please, give a name to your backup file: ")
+          if not os.path.exists(f'{name_file}'):
+            with open(name_file, 'w') as fichier:
+              fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+            print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
             break
-        else:
-            rep3 = input(f"The file '{name_file}' already exists. Do you want to write Espilon max inside? (Y/n): ")
-            if rep3.lower() == 'y':
-                a=1
-                break
-            else:
-                rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
-                if rep4.lower() == 'y':
-                    a=2
-                    break
-
-      if a == 0 or a == 2:
-          with open(name_file, 'w') as fichier:
+          else:
+              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+          if rep2.lower() == 'y':
+            with open(name_file, 'w') as fichier:
               fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-      if a == 1:
-          with open(name_file, 'a') as fichier:
+            print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+            break
+          else:
+            rep3 = input(f"Do you want to add your result in it ? (Y/n): ")
+          if rep3.lower() == 'y':
+            with open(name_file, 'a') as fichier:
               fichier.write('\n-----------Optimal Epsilon with Entropy function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+            print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+            break
 
-      print(f"Optimal Epsilon with Entropy function has been successfully saved in '{name_file}'")
+  return EpsiOptiH
 
-    return EpsiOptiH
-
-def epsi_utility(y, step):
+def epsi_utility(y, step, visu=None, back_file=None):
   y = np.array(y)
   epsi = 0
   D = cdist(y, y, 'euclidean')
@@ -155,7 +170,7 @@ def epsi_utility(y, step):
     R = np.array(D<epsi)
     R=R.astype(int)
 
-    R=np.tril(R)
+    #R=np.tril(R)
 
     #------------------------------------------------------------------------------
     #Rewriting grammar
@@ -166,9 +181,14 @@ def epsi_utility(y, step):
 
     for i in range(R.shape[0]):
       Indx = np.where(R[R.shape[0]-1-i, :]!=0)
-      Valmin = int(Serie[np.min(Indx[0])])
+      Valmin = 1000000000
+
+      for k in Indx[0]:
+        if Serie[k] <= Valmin:
+          Valmin = Serie[k]
+
       for j in Indx[0]:
-          if Valmin < Serie[j]:
+          if Valmin <= Serie[j]:
             Serie[Serie==Serie[j]] = Valmin
 
     #-----------------------------------------------------------------------------
@@ -179,93 +199,98 @@ def epsi_utility(y, step):
         if Serie[i-1]!=Serie[i] and Serie[i]!=Serie[i+1]:
           newSerie[i]=0
       if i==0:
-        if Serie[i]!=Serie[i+1] and Serie[i]!=Serie[Serie.shape[0]-1]:
+        if (Serie[i]!=Serie[i+1] and Serie[i]!=Serie[Serie.shape[0]-1]) and np.count_nonzero(Serie == Serie[i])==1:
           newSerie[i]=0
       if i==Serie.shape[0]-1:
-        if Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]:
+        if (Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]) and np.count_nonzero(Serie == Serie[i])==1:
           newSerie[i]=0
-
+    for i in newSerie:
+      if np.count_nonzero(newSerie == i) <= 2:
+          newSerie[np.where(newSerie == i)] = 0
     #-----------------------------------------------------------------------------
     #Writing continuous number's sequence
-    sort = 0
+    sort = 1
     Ser = np.sort(newSerie)
     S = np.unique(Ser)
     for i in S:
-      newSerie = np.where(newSerie == i, sort, newSerie)
-      sort = sort+1
+      if i != 0:
+        newSerie = np.where(newSerie == i, sort, newSerie)
+        sort = sort+1
 
+    uniqSerie = np.unique(newSerie)
+    if len(uniqSerie)>2:
+      # Utility
+      Serie = newSerie
+      n = int(np.max(Serie)+1)
+      if n>2:
+        r=0
+        q=0
 
-    # Utility
-    Serie = newSerie
-    n = int(np.max(Serie)+1)
-    if n>2:
-      r=0
-      q=0
+        for i in range(len(Serie)-1):
+          if Serie[i] == 0 and Serie[i+1]!=0:
+            r = r+1
+          elif Serie[i] != 0 and Serie[i+1] == 0:
+            q = q+1
 
-      for i in range(len(Serie)-1):
-        if Serie[i] == 0 and Serie[i+1]!=0:
-          r = r+1
-        elif Serie[i] != 0 and Serie[i+1] == 0:
-          q = q+1
+        r=r/(len(Serie)-1)
+        q=q/(len(Serie)-1)
 
-      r=r/(len(Serie)-1)
-      q=q/(len(Serie)-1)
+        trP[e] = 1+(n-1)*(1-q-r)
 
-      trP[e] = 1+(n-1)*(1-q-r)
+        numc = 0
+        numr = 0
+        pi0 = np.zeros(n)
+        p0i = np.zeros(n)
+        Serie = Serie.astype(int)
 
-      numc = 0
-      numr = 0
-      pi0 = np.zeros(n)
-      p0i = np.zeros(n)
-      Serie = Serie.astype(int)
+        for i in Serie:
+          if i == 0 and numc != 0:
+            pi0[incc-1] += 1
+          elif i != 0:
+            incc = i
+          if i != 0 and numr == 0:
+            incr = i
+            p0i[incr-1] += 1
+          numr = i
+          numc = i
+        shc = 0
+        shr = 0
+        for i in range(len(pi0)):
+          if pi0[i] != 0:
+            pi0_prime = pi0[i]/np.sum(pi0)
+            shc = shc + pi0_prime*math.log(pi0_prime)
+          if p0i[i] != 0:
+            p0i_prime = p0i[i]/np.sum(p0i)
+            shr = shr + p0i_prime*math.log(p0i_prime)
 
-      for i in Serie:
-        if i == 0 and numc != 0:
-          pi0[incc-1] += 1
-        elif i != 0:
-          incc = i
-        if i != 0 and numr == 0:
-          incr = i
-          p0i[incr-1] += 1
-        numr = i
-        numc = i
-      shc = 0
-      shr = 0
-      for i in range(len(pi0)):
-        if pi0[i] != 0:
-          pi0_prime = pi0[i]/np.sum(pi0)
-          shc = shc + pi0_prime*math.log(pi0_prime)
-        if p0i[i] != 0:
-          p0i_prime = p0i[i]/np.sum(p0i)
-          shr = shr + p0i_prime*math.log(p0i_prime)
+        hc[e] = -shc*1/math.log(n-1)
+        hr[e] = -shr*1/math.log(n-1)
+      else:
+        hc[e] = 0
+        hr[e] = 0
 
-      hc[e] = -shc*1/math.log(n-1)
-      hr[e] = -shr*1/math.log(n-1)
-    else:
-      hc[e] = 0
-      hr[e] = 0
-
-    u[e] = 1/(n+2) * (trP[e] + hr[e] + hc[e])
-    Epsi[e] = epsi
+      u[e] = 1/(n+2) * (trP[e] + hr[e] + hc[e])
+      Epsi[e] = epsi
 
   Umax = np.max(u)
   IndxUmax = np.argmax(u)
   EpsiOptiU = Epsi[IndxUmax]
 
-  print('\n----------Utility Optimal Epsilon-------------')
-  print('Epsilon with Utility Function =',round(EpsiOptiU, 3))
-  f=plt.figure()
-  plt.plot(Epsi, u)
+  if visu is not None:
+    print('\n----------Utility Optimal Epsilon-------------')
+    print('Epsilon with Utility Function =',round(EpsiOptiU, 3))
+    f=plt.figure()
+    plt.plot(Epsi, u)
 
-  plt.title('Utility function of Epsilon')
-  plt.xlabel('Epsilon')
-  plt.ylabel('Utility function')
+    plt.title('Utility function of Epsilon')
+    plt.xlabel('Epsilon')
+    plt.ylabel('Utility function')
 
-  plt.show(block=False)
+    plt.show(block=False)
 
-  rep = input("\nDo you want to save your results ? (Y/n): ")
-  if rep.lower() == 'y':
-      while True:
+    rep = input("\nDo you want to save your plot ? (Y/n): ")
+    if rep.lower() == 'y':
+        while True:
           name_plot = input("Please, give a name to your plot: ")
           if not os.path.exists(f'{name_plot}.png'):
               break
@@ -274,38 +299,42 @@ def epsi_utility(y, step):
               if rep2.lower() == 'y':
                   break
 
-      plt.savefig(f'{name_plot}.png')
-      print("Epsilon plot has been successfully saved")
+        plt.savefig(f'{name_plot}.png')
+        print("Epsilon plot has been successfully saved")
 
-      while True:
-        name_file = input("Please, give a name to your backup file: ")
-        if not os.path.exists(f'{name_file}'):
-            a=0
+    rep = input("\nDo you want to save your result ? (Y/n): ")
+    if rep.lower() == 'y':
+      if back_file is not None:
+        with open(back_file, 'a') as fichier:
+            fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
+        print(f"Optimal Epsilon with Utility function has been successfully saved in '{back_file}'")
+      else :
+        while True:
+          name_file = input("Please, give a name to your backup file: ")
+          if not os.path.exists(f'{name_file}'):
+            with open(name_file, 'w') as fichier:
+              fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
+            print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
             break
-        else:
-            rep3 = input(f"The file '{name_file}' already exists. Do you want to write Espilon max inside? (Y/n): ")
-            if rep3.lower() == 'y':
-                a=1
-                break
-            else:
-                rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
-                if rep4.lower() == 'y':
-                    a=2
-                    break
-
-      if a == 0 or a == 2:
-          with open(name_file, 'w') as fichier:
+          else:
+              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+          if rep2.lower() == 'y':
+            with open(name_file, 'w') as fichier:
               fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
-      if a == 1:
-          with open(name_file, 'a') as fichier:
+            print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
+            break
+          else:
+            rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+          if rep3.lower() == 'y':
+            with open(name_file, 'a') as fichier:
               fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiU, 3)))
-
-      print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
+            print(f"Optimal Epsilon with Utility function has been successfully saved in '{name_file}'")
+            break
 
 
   return EpsiOptiU
 
-def test_epsi(y):
+def test_epsi(y, back_file=None):
   y = np.array(y)
   test=0
   while test==0:
@@ -465,18 +494,28 @@ def test_epsi(y):
     if ans.lower() == 'y':
       test=1
 
-  rep = input("Do you want to save your results ? (Y/n): ")
-  if rep.lower() == 'y':
-    while True:
-      name_file = input("Please, give a name to your backup files: ")
-      if not os.path.exists(f'{name_file}'):
-          a=0
-          break
-      else:
-        rep4 = input(f"{name_file} already exists. Do you want to replace it ? (Y/n): ")
-        if rep4.lower() == 'y':
+  if back_file is not None:
+    rep = input("Do you want to save your results ? (Y/n): ")
+    if rep.lower() == 'y':
+      with open(back_file, 'a') as fichier:
+        fichier.write('\n\n-----------Epsilon-----------\n')
+        fichier.write('epsilon = '+ epsilon + '\n\n')
+        fichier.write('\n-----------Recurrence matrix-----------\n')
+        np.savetxt(fichier, R, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+        fichier.write('\n\n-----------Symbolic serie-----------\n')
+        np.savetxt(fichier, newSerie, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+      plt.figure(1).savefig(f"{back_file}_rec_plot.png")
+      plt.figure(2).savefig(f"{back_file}_colored_serie.png")
+      plt.figure(3).savefig(f"{back_file}_colored_trajectory.png")
+      print("Results successfully saved !")
+  else :
+    rep = input("Do you want to save your results ? (Y/n): ")
+    if rep.lower() == 'y':
+      while True:
+        name_file = input("Please, give a name to your backup file: ")
+        if not os.path.exists(f'{name_file}'):
           with open(name_file, 'w') as fichier:
-            fichier.write('\n-----------Epsilon-----------\n')
+            fichier.write('\n\n-----------Epsilon-----------\n')
             fichier.write('epsilon = '+ epsilon + '\n\n')
             fichier.write('\n-----------Recurrence matrix-----------\n')
             np.savetxt(fichier, R, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
@@ -485,16 +524,270 @@ def test_epsi(y):
           plt.figure(1).savefig(f"{name_file}_rec_plot.png")
           plt.figure(2).savefig(f"{name_file}_colored_serie.png")
           plt.figure(3).savefig(f"{name_file}_colored_trajectory.png")
+          print("Results successfully saved !")
+          break
+        else:
+            rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+        if rep2.lower() == 'y':
+          with open(name_file, 'w') as fichier:
+            fichier.write('\n\n-----------Epsilon-----------\n')
+            fichier.write('epsilon = '+ epsilon + '\n\n')
+            fichier.write('\n-----------Recurrence matrix-----------\n')
+            np.savetxt(fichier, R, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+            fichier.write('\n\n-----------Symbolic serie-----------\n')
+            np.savetxt(fichier, newSerie, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+          plt.figure(1).savefig(f"{name_file}_rec_plot.png")
+          plt.figure(2).savefig(f"{name_file}_colored_serie.png")
+          plt.figure(3).savefig(f"{name_file}_colored_trajectory.png")
+          print("Results successfully saved !")
+          break
+        else:
+          rep3 = input(f"Do you want to add your results in it ? (Y/n): ")
+        if rep3.lower() == 'y':
+          with open(name_file, 'a') as fichier:
+            fichier.write('\n\n-----------Epsilon-----------\n')
+            fichier.write('epsilon = '+ epsilon + '\n\n')
+            fichier.write('\n-----------Recurrence matrix-----------\n')
+            np.savetxt(fichier, R, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+            fichier.write('\n\n-----------Symbolic serie-----------\n')
+            np.savetxt(fichier, newSerie, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+          plt.figure(1).savefig(f"{name_file}_rec_plot.png")
+          plt.figure(2).savefig(f"{name_file}_colored_serie.png")
+          plt.figure(3).savefig(f"{name_file}_colored_trajectory.png")
+          print("Results successfully saved !")
+          break
 
-    with open(name_file, 'w') as fichier:
-      fichier.write('\n-----------Epsilon-----------\n')
-      fichier.write('epsilon = '+ epsilon + '\n\n')
-      fichier.write('\n-----------Recurrence matrix-----------\n')
-      np.savetxt(fichier, R, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-      fichier.write('\n\n-----------Symbolic serie-----------\n')
-      np.savetxt(fichier, newSerie, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-    plt.figure(1).savefig(f"{name_file}_rec_plot.png")
-    plt.figure(2).savefig(f"{name_file}_colored_serie.png")
-    plt.figure(3).savefig(f"{name_file}_colored_trajectory.png")
+def opti_epsi_phi(y, length, step, visu=None, back_file=None):
+    epsi = 0
+    D = cdist(y, y, 'euclidean')
+    nbr_epsi = int(math.ceil(np.max(D))/step)
 
-    print("Results successfully saved !")
+    Epsi = []
+    trp = []
+    detp = []
+    tr_des = []
+    det_des = []
+    Sum_Pij = []
+    
+    #------------------------------------------------------------------------PHI FUNCTION-----------------------------------------------------------
+    for e in range(nbr_epsi):
+        sumpij=0
+        epsi = epsi + step
+        R = np.array(D<epsi)
+        R=R.astype(int)
+
+        serie = symbolic_series.symbolic_serie(R)
+        serie=serie.astype(int)
+        if len(np.unique(serie)) == 1 and np.unique(serie) == 1 :
+            break
+        else :
+            if len(np.unique(serie))>2:
+                Epsi.append(epsi)
+                f = np.zeros((np.max(serie)+1, np.max(serie)+1))
+                r=0
+                q=0
+                for i in range(len(serie)-1):
+                    if serie[i] == 0 and serie[i+1]!=0:
+                        r = r+1
+                    elif serie[i] != 0 and serie[i+1] == 0:
+                        q = q+1
+                    f[serie[i], serie[i+1]] = f[serie[i], serie[i+1]] + 1
+                s = np.sum(f, axis=0)
+                n = f.shape[0]
+                P = np.zeros((n, n))
+                for i in range(n):
+                    for j in range(n):
+                        if s[j] != 0:
+                            P[i,j] = f[i,j]/s[j]
+                        else:
+                            P[i,j]=0
+                for i in range(1,n):
+                    for j in range(1,n):
+                        if i!=j and i!=0 and j!= 0:
+                            sumpij = sumpij+P[i,j]
+
+                r=r/(len(serie))
+                q=q/(len(serie))
+
+                mat_des = np.zeros((n, n))
+                for i in range(n):
+                    mat_des[0, i] = q if i != 0 else 1 - (n - 1) * q
+                    mat_des[i, 0] = r if i != 0 else 1 - (n - 1) * q
+                    mat_des[i, i] = 1 - r if i != 0 else 1 - (n - 1) * q
+
+                trp.append(np.trace(P)) 
+                detp.append(np.linalg.det(P))
+                tr_des.append(np.trace(mat_des))
+                det_des.append(np.linalg.det(mat_des))
+                Sum_Pij.append(sumpij)
+
+    err_det = [abs(alpha - beta) for alpha, beta in zip(det_des, detp)]
+    err_tr = [abs(alpha - beta) for alpha, beta in zip(tr_des, trp)]
+    #--------------------------------------------------------------------------------Loop-----------------------------------------------------------------------------------------------
+    w1_best=None
+    w2_best=None
+    lam_best=None
+    best_loss = float('inf')
+    counter=0
+
+    iterations=5000
+    alpha_des = 3
+    word_des = alpha_des+3
+    Lz_des_min = 11
+    Lz_des_max = 31
+    Lz_des = length/5
+    tol = 3
+
+    while(counter<iterations):
+        
+        counter=counter+1
+        #---------------------------------------------------------------------Initialisation----------------------------------------------------------------------------------
+        w1 = round(random.uniform(0, 10), 3)
+        w2 = round(random.uniform(0, 10), 3)
+        lam = round(random.uniform(0, 10), 3)
+        
+        phi = [w1*alpha + w2*beta + lam*gamma for alpha, beta, gamma in zip(err_tr, err_det,Sum_Pij)]
+        phi_opti = min(phi)
+        indices = [i for i in range(len(phi)) if phi[i] == phi_opti]
+        opti_epsi = [round(Epsi[i],3) for i in indices]
+
+        #---------------------------------------------------------------------COMBINE PHI FUNCTION WITH ENTROPY FUNCTION--------------------------------------------------
+        if len(opti_epsi)>1:
+            count = 0
+            Entropy = np.zeros(len(opti_epsi))
+            for e in opti_epsi:
+                R = np.array(D<e)
+                R=R.astype(int)
+
+                Serie = symbolic_series.symbolic_serie(R)
+
+                p = np.array(np.unique(Serie).shape[0])
+                H=0
+                occurrences = np.bincount(Serie)
+                for valeur, nb_occurrences in enumerate(occurrences):
+                    if nb_occurrences > 0:
+                        pi = nb_occurrences/Serie.shape[0]
+                        H=H+pi*np.log2(pi)
+
+                Hneg = -H
+                Entropy[count]= Hneg
+                count=count+1
+
+            # Results epsilon
+            Hmax = np.max(Entropy)
+            IndxHmax = np.argmax(Entropy)
+            EpsiOptiH = opti_epsi[IndxHmax]
+        else:
+            EpsiOptiH = opti_epsi[0]
+
+        #--------------------------------------------------------------Complexity--------------------------------------------------------------------------------------------
+        D = cdist(y, y, 'euclidean')
+        R = np.array(D<EpsiOptiH)
+        R=R.astype(int)
+
+        serie = symbolic_series.symbolic_serie(R)
+        C_alphabet_size,C_nbr_words,C_LZ = symbolic_series.complexity(serie)
+
+        def loss_fct(alpha_des,word_des,Lz_des,C_alphabet_size,C_nbr_words,C_LZ):
+            loss = abs(alpha_des-C_alphabet_size)+abs(word_des-C_nbr_words)+abs(Lz_des-C_LZ)
+            return loss
+
+        loss = loss_fct(alpha_des,word_des,Lz_des,C_alphabet_size,C_nbr_words,C_LZ)
+        #if loss < best_loss and C_LZ>Lz_des_min and C_LZ<Lz_des_max:
+        if loss < best_loss:
+            w1_best = w1
+            w2_best = w2
+            lam_best = lam
+            #C_alpha_best = C_alphabet_size
+            #C_word_best = C_nbr_words
+            #C_Lz_best = C_LZ
+            best_loss = loss
+        if loss < tol:
+            break
+    phi = [w1_best*alpha + w2_best*beta + lam_best*gamma for alpha, beta, gamma in zip(err_tr, err_det,Sum_Pij)]
+    """
+    print("")
+    print("\n--------------------------------------------------Results-------------------------------------------------------")
+    print('\nBest w1 = ',w1_best)
+    print('Best w2 = ', w2_best)
+    print('Best lambda = ',lam_best)
+    """
+    phi_opti = min(phi)
+    indices = [i for i in range(len(phi)) if phi[i] == phi_opti]
+    opti_epsi = [round(Epsi[i],3) for i in indices]
+    #---------------------------------------------------------------------COMBINE PHI FUNCTION WITH ENTROPY FUNCTION--------------------------------------------------
+    if len(opti_epsi)>1:
+        count = 0
+        Entropy = np.zeros(len(opti_epsi))
+        for e in opti_epsi:
+            R = np.array(D<e)
+            R=R.astype(int)
+
+            Serie = symbolic_series.symbolic_serie(R)
+
+            p = np.array(np.unique(Serie).shape[0])
+            H=0
+            occurrences = np.bincount(Serie)
+            for valeur, nb_occurrences in enumerate(occurrences):
+                if nb_occurrences > 0:
+                    pi = nb_occurrences/Serie.shape[0]
+                    H=H+pi*np.log2(pi)
+
+            Hneg = -H
+            Entropy[count]= Hneg
+            count=count+1
+
+        # Results epsilon
+        Hmax = np.max(Entropy)
+        IndxHmax = np.argmax(Entropy)
+        EpsiOptiH = opti_epsi[IndxHmax]
+    else:
+        EpsiOptiH = opti_epsi[0]
+    """"
+    print('Optimal epsilon = ',EpsiOptiH)
+    print("Loss = ",best_loss)
+    print("\nTarget C_alphabet= ",alpha_des)    
+    print('C_alphabet = ', C_alpha_best)
+    print("\nTarget C_nbr_words = ",word_des)
+    print('C_words = ', C_word_best)
+    #print("\nTarget C_LZ : ",Lz_des_min," ; ",Lz_des_max)
+    print("\nTarget C_LZ = ",Lz_des)
+    print('C_LZ = ', C_Lz_best)
+    """
+
+    if visu is not None:
+      print('\n-----------Optimal Epsilon with Phi function-----------')
+      print('Optimal Epsilon = ',EpsiOptiH)
+      rep = input("\nDo you want to save your result ? (Y/n): ")
+      if rep.lower() == 'y':
+        if back_file is not None:
+          with open(back_file, 'a') as fichier:
+              fichier.write('\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+          print(f"Optimal Epsilon with Phi function has been successfully saved in '{back_file}'")
+        else :
+          while True:
+            name_file = input("Please, give a name to your backup file: ")
+            if not os.path.exists(f'{name_file}'):
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+              print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+              break
+            else:
+                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+            if rep2.lower() == 'y':
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+              print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+              break
+            else:
+              rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+            if rep3.lower() == 'y':
+              with open(name_file, 'a') as fichier:
+                fichier.write('\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+              print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+              break
+    return EpsiOptiH
+    
+        
+          
+          

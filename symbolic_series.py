@@ -9,10 +9,13 @@ Original file is located at
 
 import numpy as np
 import matplotlib.pyplot as plt
-#from RASCoPy import recurrence
+from RASCoPy import recurrence, opti_epsi
 import os
+import sys
+from scipy.stats import mannwhitneyu
 
-def symbolic_serie(R):
+
+def symbolic_serie(R, visu=None, back_file=None):
 
   #------------------------------------------------------------------------------
   #Rewriting grammar
@@ -41,53 +44,60 @@ def symbolic_serie(R):
       if Serie[i-1]!=Serie[i] and Serie[i]!=Serie[i+1]:
         newSerie[i]=0
     if i==0:
-      if Serie[i]!=Serie[i+1] and Serie[i]!=Serie[Serie.shape[0]-1]:
+      if (Serie[i]!=Serie[i+1] and Serie[i]!=Serie[Serie.shape[0]-1]) and np.count_nonzero(Serie == Serie[i])==1:
         newSerie[i]=0
     if i==Serie.shape[0]-1:
-      if Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]:
+      if (Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]) and np.count_nonzero(Serie == Serie[i])==1:
         newSerie[i]=0
+  for i in newSerie:
+     if np.count_nonzero(newSerie == i) <= 2:
+        newSerie[np.where(newSerie == i)] = 0
+        
 
   #-----------------------------------------------------------------------------
   #Writing continuous number's sequence
-  sort = 0
+  sort = 1
   Ser = np.sort(newSerie)
   S = np.unique(Ser)
   for i in S:
-    newSerie = np.where(newSerie == i, sort, newSerie)
-    sort = sort+1
+    if i != 0:
+      newSerie = np.where(newSerie == i, sort, newSerie)
+      sort = sort+1
 
-  print('\n-----------Symbolic serie-----------')
-  print(newSerie)
-
-  rep = input("Do you want to save this symbolic series ? (Y/n): ")
-  if rep.lower() == 'y':
-    while True:
-      name_file = input("Please, give a name to your backup file: ")
-      if not os.path.exists(f'{name_file}'):
-        a=0
-        break
-      else:
-        rep3 = input(f"The file '{name_file}' already exists. Do you want to write your Symbolic serie inside? (Y/n): ")
-        if rep3.lower() == 'y':
-          a=1
-          break
-        else:
-          rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
-          if rep4.lower() == 'y':
-            a=2
+  if visu is not None:
+    print('\n-----------Symbolic serie-----------')
+    print(newSerie)
+    if back_file is not None:
+      rep = input("Do you want to save this symbolic series ? (Y/n): ")
+      if rep.lower() == 'y':
+        newSerie_array = np.array(list(newSerie))
+        with open(back_file, 'a') as fichier:
+          fichier.write('\n-----------Symbolic serie-----------' + '\n')
+          np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+        print(f"Symbolic serie has been successfully saved in {back_file}")
+    else :
+      rep = input("Do you want to save this symbolic series ? (Y/n): ")
+      if rep.lower() == 'y':
+        while True:
+          name_file = input("Please, give a name to your backup file: ")
+          if not os.path.exists(f'{name_file}'):
             break
-
-    if a == 0 or a == 2:
-      with open(name_file, 'w') as fichier:
-        fichier.write('\n-----------Symbolic serie-----------' + '\n')
-        np.savetxt(fichier, newSerie, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-    if a == 1:
-      with open(name_file, 'a') as fichier:
-        fichier.write('\n-----------Symbolic serie-----------' + '\n')
-        np.savetxt(fichier, newSerie, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
-
-    print(f"Symbolic serie has been successfully saved in {name_file}")
-
+          else:
+              rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+          if rep2.lower() == 'y':
+            with open(name_file, 'w') as fichier:
+              fichier.write('\n-----------Symbolic serie-----------' + '\n')
+            np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+            print(f"Symbolic serie has been successfully saved in {name_file}")
+            break
+          else:
+            rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+          if rep3.lower() == 'y':
+            with open(name_file, 'a') as fichier:
+              fichier.write('\n-----------Symbolic serie-----------' + '\n')
+            np.savetxt(fichier, newSerie_array, fmt='%d', delimiter='\t', newline='\n', header='', footer='', comments='')
+            print(f"Symbolic serie has been successfully saved in {name_file}")
+            break
 
   return newSerie
 
@@ -98,22 +108,28 @@ def colored_sym_serie(serie, y):
 
   if len(palette) > np.max(serie):
     fig, ax = plt.subplots()
-
+    ax.set_title("Symbolic sequence")
     for couleur in serie:
-      ax.barh(0, 1, color=palette[int(couleur)], height=0.2, left=position)
+      ax.barh(y=0, width=1, color=palette[int(couleur)], height=0.2, left=position)
       position += 1
 
-    ax.set_ylim(-0.5, 0.5)
+    ax.set_ylim(0, 0.3)
     ax.axis('off')
-
+    
+    
     ax2 = ax.twiny()
     ax2.set_xlim(ax.get_xlim())
-    ax2.set_xticks(np.arange(0, len(serie) + 1, 10) + 0.5)
-    ax2.set_xticklabels(np.arange(0, len(serie) + 1, 10))
+    ax2.set_ylim(ax.get_ylim())
+    ax2.set_xticks(np.arange(0, len(serie) + 1, int(len(serie)/10)))
+    ax2.set_xticklabels(np.arange(0, len(serie) + 1, int(len(serie)/10)))
     ax2.tick_params(axis='x', which='both', bottom=True, top=False, labeltop = False, labelbottom=True)
+    ax2.set_xlabel('Samples')
+    ax2.xaxis.set_label_position('bottom')
+    ax.text(int(serie.shape[0])/2, 0.25,"Red: transient state / Other colors: metastable states", fontsize=9, ha='center', va='center')
 
     plt.show(block=False)
 
+    print('\n-----------Colored symbolic serie-----------')
     rep = input("Do you want to save this colored symbolic serie plot ? (Y/n): ")
     if rep.lower() == 'y':
       while True:
@@ -134,26 +150,80 @@ def plot_col_traj(serie,y):
 
   palette = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'black', 'pink', 'brown', 'gray', 'turquoise', 'indigo', 'beige', 'olive', 'cyan', 'magenta', 'gold', 'silver', 'coral', 'lavender', 'chartreuse', 'orangered', 'aquamarine', 'skyblue', 'pumpkin', 'emerald']
   if len(palette) > np.max(serie) :
-    figure = plt.figure()
     if y.shape[1] == 3 :
+      figure = plt.figure()
+      plt.title("Colored 3D trajectory")
+      plt.axis('off')
       ax = figure.add_subplot(111, projection='3d')
       ax.scatter(y[0, 0],y[0,1],y[0,2], color=palette[int(serie[0])], marker='o')
       for i in range(serie.shape[0]-1):
         ax.scatter(y[i+1, 0],y[i+1,1],y[i+1,2], color=palette[int(serie[i+1])], marker='o')
-        ax.plot(y[i:i+2, 0],y[i:i+2,1],y[i:i+2,2], color=palette[int(serie[i])])
+        if serie[i+1]==0:
+          ax.plot(y[i:i+2, 0],y[i:i+2,1],y[i:i+2,2], color='red')
+        else:
+          ax.plot(y[i:i+2, 0],y[i:i+2,1],y[i:i+2,2], color=palette[int(serie[i])])
+      ax.text2D(0.5, -0.1, "Red: transient state / Other colors: metastable states", transform=ax.transAxes, fontsize=9, ha='center', va='center')
+      ax.set_xlabel('X')
+      ax.set_ylabel('Y')
+      ax.set_zlabel('Z')
+
+      figure2 = plt.figure()
+      ax1 = plt.subplot2grid((2, 2), (0, 0))
+      ax2 = plt.subplot2grid((2, 2), (0, 1), rowspan=2)
+      ax3 = plt.subplot2grid((2, 2), (1, 0))
+      ax1.set_title("Colored 2D trajectory (Y,X)")
+      ax1.scatter(y[0, 1],y[0,0], color=palette[int(serie[0])], marker='o')
+      for i in range(serie.shape[0]-1):
+          ax1.scatter(y[i+1, 1],y[i+1,0], color=palette[int(serie[i+1])], marker='o')
+          if serie[i+1]==0:
+              ax1.plot(y[i:i+2,1],y[i:i+2,0], color='red')
+          else:
+              ax1.plot(y[i:i+2,1],y[i:i+2,0], color=palette[int(serie[i])])
+      ax1.set_xlabel('Right-Left (Y) axis')
+      ax1.set_ylabel('Front-Back (X) axis')
+      ax2.set_title("Colored 2D trajectory (X,Z)")
+      ax2.scatter(y[0, 0],y[0,2], color=palette[int(serie[0])], marker='o')
+      for i in range(serie.shape[0]-1):
+          ax2.scatter(y[i+1, 0],y[i+1,2], color=palette[int(serie[i+1])], marker='o')
+          if serie[i+1]==0:
+              ax2.plot(y[i:i+2, 0],y[i:i+2,2], color='red')
+          else:
+              ax2.plot(y[i:i+2, 0],y[i:i+2,2], color=palette[int(serie[i])])
+      ax2.set_xlabel('Front-Back (X) axis')
+      ax2.set_ylabel('Up-Down (Z) axis')
+      ax3.set_title("Colored 2D trajectory (Y,Z)")
+      ax3.scatter(y[0, 1],y[0,2], color=palette[int(serie[0])], marker='o')
+      for i in range(serie.shape[0]-1):
+          ax3.scatter(y[i+1, 1],y[i+1,2], color=palette[int(serie[i+1])], marker='o')
+          if serie[i+1]==0:
+              ax3.plot(y[i:i+2, 1],y[i:i+2,2], color='red')
+          else:
+              ax3.plot(y[i:i+2, 1],y[i:i+2,2], color=palette[int(serie[i])])
+      ax3.set_xlabel('Right-Left (Y) axis')
+      ax3.set_ylabel('Up-Down (Z) axis')
+      plt.tight_layout()
+      plt.show(block=False)
+  
     elif y.shape[1] == 2:
+      figure = plt.figure()
       plt.scatter(y[0,0], y[0,1], color=palette[int(serie[0])], marker = 'o')
       for i in range(serie.shape[0]-1):
         plt.scatter(y[i+1,0], y[i+1,1], color=palette[int(serie[i+1])], marker = 'o')
         plt.plot(y[i:i+2,0], y[i:i+2,1], color = palette[int(serie[i])])
+      plt.text(0.5, -0.1, "Red: transient state / Other colors: metastable states", transform=plt.gca().transAxes, fontsize=9, ha='center', va='center')
+      plt.xlabel('Coordinate 1')
+      plt.ylabel('Coordinate 2')
     elif y.shape[1] == 1:
+      figure = plt.figure()
       for i in range(serie.shape[0]):
         plt.scatter(y[i], 0, color=palette[int(serie[i])], marker='o')
+
     plt.show(block=False)
   else :
     print("Your data is too complexe to color a trajectory")
 
-  rep = input("\nDo you want to save this colored trajectory ? (Y/n): ")
+  print('\n-----------Colored trajectory-----------')
+  rep = input("Do you want to save this colored trajectory ? (Y/n): ")
   if rep.lower() == 'y':
     while True:
       name_file = input("Please, give a name to your plot: ")
@@ -166,12 +236,13 @@ def plot_col_traj(serie,y):
     plt.savefig(f'{name_file}.png')
     print("Colored trajectory has been successfully saved")
 
-def complexity(serie):
+
+def complexity(serie, visu=None, back_file=None):
     # Alphabet size
     C_alphabet_size = np.max(serie)+1
-
-    print('\n------------- Complexity with the alphabet size method -------------\n')
-    print('Complexity alphabet size = ' + str(C_alphabet_size))
+    if visu != None:
+      print('\n------------- Complexity with the alphabet size method -------------')
+      print('Complexity alphabet size = ' + str(C_alphabet_size))
 
     # Number of words
     a = 0
@@ -181,15 +252,20 @@ def complexity(serie):
     for i in range(len(serie)-1):
         w = ''
         if serie[i] != serie[i+1]:
-            for j in range(a, i, 1):
-                w = w + str(serie[j])
+            for j in range(a, i+1, 1):
+                w = w + str(int(serie[j]))
             W_nw.append(w)
-            b = b + 1
             a = i + 1
+        if i == len(serie)-2:
+          for j in range(a, i+2, 1):
+              w = w + str(int(serie[j]))
+          W_nw.append(w)
     unique = set(W_nw)
     C_nbr_words = len(unique)
-    print('\n------------- Complexity with the number of words method -------------\n')
-    print('Complexity number of words = ' + str(C_nbr_words))
+
+    if visu != None:
+      print('\n------------- Complexity with the number of words method -------------')
+      print('Complexity number of words = ' + str(C_nbr_words))
 
     # Lempel-Ziv
 
@@ -224,19 +300,231 @@ def complexity(serie):
 
     C_LZ = len(W_LZ)
 
-    print('\n------------- Complexity with the Lempel-Ziv method -------------\n')
-    print('Complexity Lempel-Ziv = ' + str(C_LZ))
-    print('\n')
+    if visu != None:
+      print('\n------------- Complexity with the Lempel-Ziv method -------------')
+      print('Complexity Lempel-Ziv = ' + str(C_LZ))
+      print('\n')
+      if back_file is not None:
+        rep = input("Do you want to save this complexity measures ? (Y/n): ")
+        if rep.lower() == 'y':
+          with open(back_file, 'a') as fichier:
+            fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
+            fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
+            fichier.write('\n------------- Complexity with the number of words method -------------\n')
+            fichier.write('Complexity number of words = ' + str(C_nbr_words))
+            fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
+            fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
+          print(f"Complexity measures have been successfully saved in {back_file}")
+      else :
+        rep = input("Do you want to save this complexity measures ? (Y/n): ")
+        if rep.lower() == 'y':
+          while True:
+            name_file = input("Please, give a name to your backup file: ")
+            if not os.path.exists(f'{name_file}'):
+              break
+            else:
+                rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+            if rep2.lower() == 'y':
+              with open(name_file, 'w') as fichier:
+                fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
+                fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
+                fichier.write('\n------------- Complexity with the number of words method -------------\n')
+                fichier.write('Complexity number of words = ' + str(C_nbr_words))
+                fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
+                fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
+              print(f"Complexity measures have been successfully saved in {name_file}")
+              break
+            else:
+              rep3 = input(f"Do you want to add your complexity measures in it ? (Y/n): ")
+            if rep3.lower() == 'y':
+              with open(name_file, 'a') as fichier:
+                fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
+                fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
+                fichier.write('\n------------- Complexity with the number of words method -------------\n')
+                fichier.write('Complexity number of words = ' + str(C_nbr_words))
+                fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
+                fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
+              print(f"Complexity measures have been successfully saved in {name_file}")
+              break
 
-    rep = input("Do you want to save this complexity values ? (Y/n): ")
-    if rep.lower() == 'y':
+    return C_alphabet_size, C_nbr_words, C_LZ
+
+
+def complexity_shuffle(y, step, count=100, back_file = None):
+  y2 = y
+  alphabet = []
+  words= []
+  lempelZiv = []
+
+  epsi = opti_epsi.epsi_entropy(y,step)
+  R = recurrence.rec_mat(y, epsi)
+  serie = symbolic_serie(R)
+  alpha, word, lz = complexity(serie)
+  alphabet.append(alpha)
+  words.append(word)
+  lempelZiv.append(lz)
+
+  for i in range(count):
+    np.random.shuffle(y2)
+    epsi = opti_epsi.epsi_entropy(y2,step)
+    R = recurrence.rec_mat(y2, epsi)
+    serie = symbolic_serie(R)
+    alpha, word, lz = complexity(serie)
+    alphabet.append(alpha)
+    words.append(word)
+    lempelZiv.append(lz)
+    sys.stdout.write("\r")
+    sys.stdout.write(f"Test n°: {i+1}/{count}")
+    sys.stdout.flush()
+
+
+
+  fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 20))
+  plt.subplots_adjust(hspace=1.0)
+  ord = [2] * (count+1)
+  ax1.plot(alphabet[0],0, marker='o', color='red', label='First value', linestyle='None')  
+  ax1.plot(alphabet[1:], range(1, count + 1), marker='.', color='blue', linestyle='None', label='Shuffled values')
+  ax2.plot(words[0],0, marker='o', color='red', label='First value', linestyle='None')
+  ax2.plot(words[1:], range(1, count + 1), marker='.', color='blue', linestyle='None', label='Shuffled values')
+  ax3.plot(lempelZiv[0],0, marker='o', color='red', label='First value', linestyle='None')
+  ax3.plot(lempelZiv[1:],range(1, count + 1), marker='.', color='blue', linestyle='None', label='Shuffled values')
+  ax1.set_title('Alphabet Size Complexity')
+  ax2.set_title('Number of Words Complexity')
+  ax3.set_title('Lempel-Ziv Complexity')
+  ax1.set_xlabel('Complexity values')
+  ax1.set_ylabel('Iteration n°')
+  ax2.set_xlabel('Complexity values')
+  ax2.set_ylabel('Iteration n°')
+  ax3.set_xlabel('Complexity values')
+  ax3.set_ylabel('Iteration n°')
+  ax1.legend()
+  ax2.legend()
+  ax3.legend()
+
+  #plt.tight_layout()
+  plt.show(block=False)
+
+  ocAlpha = {}
+  ocWords = {}
+  ocLZ = {}
+
+  for v in alphabet:
+      if v in ocAlpha:
+          ocAlpha[v] += 1
+      else:
+          ocAlpha[v] = 1
+
+  for v in words:
+      if v in ocWords:
+          ocWords[v] += 1
+      else:
+          ocWords[v] = 1
+
+  for v in lempelZiv:
+      if v in ocLZ:
+          ocLZ[v] += 1
+      else:
+          ocLZ[v] = 1
+
+  width = 0.35
+
+  fig2, (ax4,ax5,ax6) = plt.subplots(3, 1, figsize=(8, 16))
+  plt.subplots_adjust(hspace=0.8)
+  bars1 = ax4.bar(ocAlpha.keys(), ocAlpha.values(), width)
+  bars2 = ax5.bar(ocWords.keys(), ocWords.values(), width)
+  bars3 = ax6.bar(ocLZ.keys(), ocLZ.values(), width)
+
+
+  index_alpha = list(ocAlpha.keys()).index(alphabet[0])
+  index_words = list(ocWords.keys()).index(words[0])
+  index_lz = list(ocLZ.keys()).index(lempelZiv[0])
+
+  bars1[index_alpha].set_color('red')
+  bars2[index_words].set_color('red')
+  bars3[index_lz].set_color('red')
+
+  ax4.set_title('Alphabet Size Complexity')
+  ax5.set_title('Number of Words Complexity')
+  ax6.set_title('Lempel-Ziv Complexity')
+  ax4.set_xticks(list(ocAlpha.keys()))
+  ax5.set_xticks(list(ocWords.keys()))
+  ax6.set_xticks(list(ocLZ.keys()))
+  ax4.set_xlabel('Complexity values')
+  ax4.set_ylabel('Population')
+  ax5.set_xlabel('Complexity values')
+  ax5.set_ylabel('Population')
+  ax6.set_xlabel('Complexity values')
+  ax6.set_ylabel('Population')
+  ax6.text(0.1, -0.3, "Red bar: Contains the first complexity value", transform=ax6.transAxes, fontsize=9, ha='center', va='center')
+  plt.show(block=False)
+
+  print("\n\n-----------T-test non-parametric Wilcoxon-Mann-Whitney-----------")
+  u_statistic_alpha, p_value_alpha = mannwhitneyu(alphabet[1:], [alphabet[0]])
+  print("\np value Alphabet Size for ",alphabet[0]," = ",p_value_alpha)
+  if p_value_alpha < 0.1:
+      display_ya = "Alphabet Size Complexity measure is far from the random distribution. Results can be interpreted."
+      print(display_ya)
+      backa = display_ya
+  else:
+      display_na = "Alphabet Size Complexity measure is too close to the random distribution. Results cannot be interpreted."
+      print(display_na)
+      backa = display_na
+
+  u_statistic_words, p_value_words = mannwhitneyu(words[1:], [words[0]])
+  print("\np value Number of Words for ",words[0]," = ",p_value_words)
+  if p_value_words < 0.1:
+      display_yw = "Number of Words Complexity measure is far from the random distribution. Results can be interpreted."
+      print(display_yw)
+      backw = display_yw
+  else:
+      display_nw = "Number of Words Complexity measure is too close to the random distribution. Results cannot be interpreted."
+      print(display_nw)
+      backw = display_nw
+
+  u_statistic_lz, p_value_lz = mannwhitneyu(lempelZiv[1:], [lempelZiv[0]])
+  print("\np value Lempel-Ziv for ",lempelZiv[0]," = ",p_value_lz)
+  if p_value_lz < 0.1:
+      display_yl = "Lempel-Ziv Complexity measure is far from the random distribution. Results can be interpreted."
+      print(display_yl)
+      backl = display_yl
+  else:
+      display_nl = "Lempel-Ziv Complexity measure is too close to the random distribution. Results cannot be interpreted."
+      print(display_nl)
+      backl = display_nl
+
+
+  print('\n-----------Complexity analysis-----------')
+  rep = input("Do you want to save this analysis ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    fig.savefig(f'{name_file}_dot.png')
+    fig2.savefig(f'{name_file}_bar.png')
+
+    if back_file != None:
+      with open(back_file, 'a') as fichier:
+        fichier.write('\n------------- Mann Withney U T-Test -------------\n')
+        fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}')
+        fichier.write(backa)
+        fichier.write(f'\nP value for Number of Words = {p_value_words}')
+        fichier.write(backw)
+        fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}')
+        fichier.write(backl)
+      print(f"T-test results have been successfully saved in {back_file}")
+    else: 
       while True:
         name_file = input("Please, give a name to your backup file: ")
         if not os.path.exists(f'{name_file}'):
           a=0
           break
         else:
-          rep3 = input(f"The file '{name_file}' already exists. Do you want to write your complexity values inside? (Y/n): ")
+          rep3 = input(f"The file '{name_file}' already exists. Do you want to write your t-test results inside? (Y/n): ")
           if rep3.lower() == 'y':
             a=1
             break
@@ -245,24 +533,25 @@ def complexity(serie):
             if rep4.lower() == 'y':
               a=2
               break
-
       if a == 0 or a == 2:
         with open(name_file, 'w') as fichier:
-          fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
-          fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
-          fichier.write('\n------------- Complexity with the number of words method -------------\n')
-          fichier.write('Complexity number of words = ' + str(C_nbr_words))
-          fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
-          fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
+          fichier.write('\n\n------------- Mann Withney U T-Test -------------\n')
+          fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}\n')
+          fichier.write(backa)
+          fichier.write(f'\nP value for Number of Words = {p_value_words}\n')
+          fichier.write(backw)
+          fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}\n')
+          fichier.write(backl)
+        print(f"T-test results have been successfully saved in {name_file}")
       if a == 1:
         with open(name_file, 'a') as fichier:
-          fichier.write('\n------------- Complexity with the alphabet size method -------------\n')
-          fichier.write('Complexity alphabet size = ' + str(C_alphabet_size))
-          fichier.write('\n------------- Complexity with the number of words method -------------\n')
-          fichier.write('Complexity number of words = ' + str(C_nbr_words))
-          fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
-          fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ))
+          fichier.write('\n------------- Mann Withney U T-Test -------------\n')
+          fichier.write(f'\nP value for Alphabet Size = {p_value_alpha}')
+          fichier.write(backa)
+          fichier.write(f'\nP value for Number of Words = {p_value_words}')
+          fichier.write(backw)
+          fichier.write(f'\nP value for Lempel-Ziv: {p_value_lz}')
+          fichier.write(backl)
+        print(f"T-test results have been successfully saved in {name_file}")
 
-      print(f"Complexity values have been successfully saved in {name_file}")
-
-    return C_alphabet_size, C_nbr_words, C_LZ
+    print("Complexity analysis has been successfully saved")

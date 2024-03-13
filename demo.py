@@ -59,6 +59,9 @@ def demo_LotkaVoltera(method):
   ax = fig.add_subplot(111, projection='3d')
   ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
   plt.title('LotkaVoltera trajectory in 3D')
+  ax.set_xlabel('X')
+  ax.set_ylabel('Y')
+  ax.set_zlabel('Z')
   plt.show(block=False)
   rep = input("\nDo you want to save this plot ? (Y/n): ")
   if rep.lower() == 'y':
@@ -116,6 +119,9 @@ def demo_LotkaVoltera(method):
     test=1
   elif method == 4:
     test=0
+  elif method == 5:
+    epsi = opti_epsi.opti_epsi_phi(y, step, 1)
+    test=1
 
   while test==0:
     epsilon = input("Please enter your epsilon value: ")
@@ -123,11 +129,15 @@ def demo_LotkaVoltera(method):
     R = recurrence.rec_mat(y, epsi)
     recurrence.rec_plt(R)
 
-    serie = symbolic_series.symbolic_serie(R)
+    serie = symbolic_series.symbolic_serie(R,1)
     symbolic_series.colored_sym_serie(serie,y)
     symbolic_series.plot_col_traj(serie,y)
+    recurrence.col_rec_plt(serie, R)
 
-    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
+    shuf = input("\nDo you want to analyse the complexity ? (Y/n): ")
+    if shuf.lower() == 'y':
+      symbolic_series.complexity_shuffle(y)
 
     ans = input("\nAre these results satisfying ? (Y/n): ")
     if ans.lower() == 'y':
@@ -135,14 +145,27 @@ def demo_LotkaVoltera(method):
       test2=0
 
   if test == 1 and test2==1:
-    R = recurrence.rec_mat(y, epsi)
-    recurrence.rec_plt(R)
+    if epsi != None:
+      R = recurrence.rec_mat(y, epsi)
+      recurrence.rec_plt(R)
 
-    serie = symbolic_series.symbolic_serie(R)
-    symbolic_series.colored_sym_serie(serie,y)
-    symbolic_series.plot_col_traj(serie,y)
+      serie = symbolic_series.symbolic_serie(R,1)
+      symbolic_series.colored_sym_serie(serie,y)
+      symbolic_series.plot_col_traj(serie,y)
+      recurrence.col_rec_plt(serie, R)
 
-    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+      C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
+    else :
+      print("epsi is None")
+
+  shuf = input("\nDo you want to analyse the complexity ? (Y/n): ")
+  if shuf.lower() == 'y':
+    nbr = input("How many tests ? ")
+    symbolic_series.complexity_shuffle(y, count=int(nbr))
+
+
+
+
 
 def demo_Lorenz(method):
 
@@ -169,7 +192,10 @@ def demo_Lorenz(method):
   fig = plt.figure()
   ax = fig.add_subplot(111, projection='3d')
   ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
-  plt.title('LotkaVoltera trajectory in 3D')
+  plt.title('Lorenz attractor trajectory in 3D')
+  ax.set_xlabel('X')
+  ax.set_ylabel('Y')
+  ax.set_zlabel('Z')
   plt.show(block=False)
   rep = input("\nDo you want to save this plot ? (Y/n): ")
   if rep.lower() == 'y':
@@ -192,7 +218,7 @@ def demo_Lorenz(method):
   figu = go.Figure(data=[go.Scatter3d(x=y[:, 0] , y=y[:,1], z=y[:,2], mode='markers', marker=dict(size=5))])
   figu.update_layout(scene=dict(xaxis_title='X1', yaxis_title='X2', zaxis_title='X3'))
   figu.update_layout(scene=dict(aspectmode="cube"))
-  plt.title('LotkaVoltera 3 coordinates function of time')
+  plt.title('Lorenz attractor 3 coordinates function of time')
   plt.xlabel('Time')
   plt.ylabel('X,Y,Z coordinates')
   plt.legend()
@@ -215,14 +241,14 @@ def demo_Lorenz(method):
   step = 0.1
   test2 = 1
   if method == 0:
-    epsi = opti_epsi.epsi_entropy(y, step)
+    epsi = opti_epsi.epsi_entropy(y, step, 1)
     test=1
   elif method == 1:
-    epsi = opti_epsi.epsi_utility(y, step)
+    epsi = opti_epsi.epsi_utility(y, step, 1)
     test=1
   elif method == 2:
-    entropy = opti_epsi.epsi_entropy(y, step)
-    utility = opti_epsi.epsi_utility(y, step)
+    entropy = opti_epsi.epsi_entropy(y, step, 1)
+    utility = opti_epsi.epsi_utility(y, step, 1)
     epsi = (entropy+utility)/2
     test=1
   elif method == 4:
@@ -234,11 +260,12 @@ def demo_Lorenz(method):
     R = recurrence.rec_mat(y, epsi)
     recurrence.rec_plt(R)
 
-    serie = symbolic_series.symbolic_serie(R)
+    serie = symbolic_series.symbolic_serie(R, 1)
     symbolic_series.colored_sym_serie(serie,y)
     symbolic_series.plot_col_traj(serie,y)
+    recurrence.col_rec_plt(serie, R)
 
-    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
 
     ans = input("\nAre these results satisfying ? (Y/n): ")
     if ans.lower() == 'y':
@@ -249,13 +276,17 @@ def demo_Lorenz(method):
     R = recurrence.rec_mat(y, epsi)
     recurrence.rec_plt(R)
 
-    serie = symbolic_series.symbolic_serie(R)
+    serie = symbolic_series.symbolic_serie(R, 1)
     symbolic_series.colored_sym_serie(serie,y)
     symbolic_series.plot_col_traj(serie,y)
+    recurrence.col_rec_plt(serie, R)
 
-    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
 
-def RASCoPy(a, method):
+
+
+
+def dataset(a, method):
 
   import joblib
   data = joblib.load("skeletons_labels.json")
@@ -333,6 +364,8 @@ def RASCoPy(a, method):
   plt.plot(times, y[:,1], color='blue', label = 'Y coordinate')
   plt.plot(times, y[:,2], color='green', label = 'Z coordinate')
   plt.title("Joint mouvement on each coordinate")
+  plt.xlabel('Time')
+  plt.ylabel('X,Y,Z coordinates')
   plt.legend()
   plt.show(block=False)
   rep = input("\nDo you want to save this plot ? (Y/n): ")
@@ -352,6 +385,9 @@ def RASCoPy(a, method):
   ax = fig.add_subplot(111, projection='3d')
   ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
   plt.title('Trajectory in 3D')
+  ax.set_xlabel('X')
+  ax.set_ylabel('Y')
+  ax.set_zlabel('Z')
   plt.show(block=False)
   rep = input("\nDo you want to save this plot ? (Y/n): ")
   if rep.lower() == 'y':
@@ -379,14 +415,14 @@ def RASCoPy(a, method):
   step = 0.001
   test2=1
   if method == 0:
-    epsi = opti_epsi.epsi_entropy(y, step)
+    epsi = opti_epsi.epsi_entropy(y, step,1)
     test=1
   elif method == 1:
-    epsi = opti_epsi.epsi_utility(y, step)
+    epsi = opti_epsi.epsi_utility(y, step,1)
     test=1
   elif method == 2:
-    entropy = opti_epsi.epsi_entropy(y, step)
-    utility = opti_epsi.epsi_utility(y, step)
+    entropy = opti_epsi.epsi_entropy(y, step,1)
+    utility = opti_epsi.epsi_utility(y, step,1)
     epsi = (entropy+utility)/2
     test=1
   elif method == 4:
@@ -398,11 +434,12 @@ def RASCoPy(a, method):
     R = recurrence.rec_mat(y, epsi)
     recurrence.rec_plt(R)
 
-    serie = symbolic_series.symbolic_serie(R)
+    serie = symbolic_series.symbolic_serie(R,1)
     symbolic_series.colored_sym_serie(serie,y)
     symbolic_series.plot_col_traj(serie,y)
+    recurrence.col_rec_plt(serie, R)
 
-    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
 
     ans = input("\nAre these results satisfying ? (Y/n): ")
     if ans.lower() == 'y':
@@ -413,11 +450,104 @@ def RASCoPy(a, method):
     R = recurrence.rec_mat(y, epsi)
     recurrence.rec_plt(R)
 
-    serie = symbolic_series.symbolic_serie(R)
+    serie = symbolic_series.symbolic_serie(R,1)
     symbolic_series.colored_sym_serie(serie,y)
     symbolic_series.plot_col_traj(serie,y)
+    recurrence.col_rec_plt(serie, R)
 
-    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie)
+    C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
+
+  shuf = input("\nDo you want to analyse the complexity ? (Y/n): ")
+  if shuf.lower() == 'y':
+    nbr = input("How many tests ? ")
+    symbolic_series.complexity_shuffle(y, count=int(nbr))
+
+
+def demo_square():
+  y=np.array([[0,0,0], [0,0,0], [0,0,0.1], [0,0,0.2], [0,0,0.3], [0,0,0.5], [0,0,2], [0,0,3.5], [0,0,5], [0,0,8], [0,0,10], [0,1,10], [0,0.5,10.5], [0,1,9.5], [0,0.5,10], [0,1,10], [0,3,10], [0,5,10], [0,7,10], [0,9.8,10], [0,9.8,10], [0,9.9,10], [0,9.95,10], [0,10,10], [0,10.1,10], [0,10,10], [0,10,9.9], [0,10,9.8], [0,10,9.5], [0,10,7.5], [0,10,6], [0,10,4], [0,10,2], [0,10,0.5], [0,10,0.2], [0,10,0.1], [0,10,0.05], [0,10,0], [0,9.8,0], [0,9.5,0], [0,8,0], [0,5,0], [0,3,0], [0,0.5,0], [0,0,0], [0,0,0], [0,0,0.1], [0,0,0.2], [0,0,0.3], [0,0,0.5], [0,0,0.5], [0,0,0.2], [0,0,2], [0,0,3.5], [0,0,5], [0,0,8], [0,0,10], [0,1,10], [0,0.5,10.5], [0,1,9.5], [0,0.5,10], [0,1,10], [0,3,10], [0,5,11], [0,7,10], [0,9.5,10], [0,9.8,10], [0,9.9,10], [0,9.95,10], [0,10,10], [0,10.1,10], [0,10,10], [0,10,9.8], [0,10,9.5], [0,10,8], [0,10,6], [0,10,4], [0,10,2], [0,10,0.5], [0,10,0.2], [0,10,0.1], [0,10,0.05], [0,10,0], [0,9.8,0], [0,9.5,0], [0,8,0], [0,5,0], [0,3,0], [0,0.5,0], [0,0,0], [0,0,0], [0,0,0],[0,0,0], [0,0,0], [0,0,0.1], [0,0,0.2], [0,0,0.3], [0,0,0.5], [0,0,2], [0,0,3.5], [0,0,5]])
+  times = np.linspace(0,y.shape[0]-1,y.shape[0])
+  print(times)
+  epsi = 1.3
+  fig = plt.figure()
+  ax = fig.add_subplot(111, projection='3d')
+  ax.plot(y[:, 0], y[:, 1], y[:, 2], marker='.', color='blue', label='Trajectory')
+  plt.title('Square trajectory in 3D')
+  ax.set_xlabel('X')
+  ax.set_ylabel('Y')
+  ax.set_zlabel('Z')
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
+
+  plt.figure()
+  plt.plot(times, y[:,0], label='X coordinate')
+  plt.plot(times, y[:,1], label='Y coordinate')
+  plt.plot(times, y[:,2], label='Z coordinate')
+
+  figu = go.Figure(data=[go.Scatter3d(x=y[:, 0] , y=y[:,1], z=y[:,2], mode='markers', marker=dict(size=5))])
+  figu.update_layout(scene=dict(xaxis_title='X1', yaxis_title='X2', zaxis_title='X3'))
+  figu.update_layout(scene=dict(aspectmode="cube"))
+  plt.title('Square 3 coordinates function of time')
+  plt.xlabel('Time')
+  plt.ylabel('X,Y,Z coordinates')
+  plt.legend()
+  plt.show(block=False)
+  rep = input("\nDo you want to save this plot ? (Y/n): ")
+  if rep.lower() == 'y':
+    while True:
+      name_file = input("Please, give a name to your plot: ")
+      if not os.path.exists(f'{name_file}.png'):
+        break
+      else:
+          rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+      if rep2.lower() == 'y':
+        break
+    plt.savefig(f'{name_file}.png')
+    print("Plot has been successfully saved")
+
+  recurrence.anim_traj(y)
+
+  R = recurrence.rec_mat(y, epsi)
+  recurrence.rec_plt(R)
+
+  serie = symbolic_series.symbolic_serie(R,1)
+  symbolic_series.colored_sym_serie(serie,y)
+  symbolic_series.plot_col_traj(serie,y)
+  recurrence.col_rec_plt(serie, R)
+
+  C_alphabet_size, C_nbr_words, C_LZ = symbolic_series.complexity(serie,1)
+
+  shuf = input("\nDo you want to analyse the complexity ? (Y/n): ")
+  if shuf.lower() == 'y':
+    nbr = input("How many tests ? ")
+    symbolic_series.complexity_shuffle(y, count=int(nbr))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def demo_HD():
 
@@ -652,4 +782,6 @@ def demo_HD():
   ax.set_ylim(-0.5, 0.5)
   ax.axis('off')
   plt.show()
+
+
 
