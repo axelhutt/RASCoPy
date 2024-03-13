@@ -1,0 +1,31 @@
+Analysis of a F people. Stage : healthy.
+
+
+-----------Optimal Epsilon with Phi function-----------
+0.014
+------------- Complexity with the alphabet size method -------------
+Complexity alphabet size = 3.0
+------------- Complexity with the number of words method -------------
+Complexity number of words = 13
+------------- Complexity with the Lempel-Ziv method -------------
+Complexity Lempel-Ziv = 18
+
+
+-----------Optimal Epsilon with Entropy function-----------
+0.011
+------------- Complexity with the alphabet size method -------------
+Complexity alphabet size = 8.0
+------------- Complexity with the number of words method -------------
+Complexity number of words = 20
+------------- Complexity with the Lempel-Ziv method -------------
+Complexity Lempel-Ziv = 30
+
+
+-----------Optimal Epsilon with Utility function-----------
+0.014
+------------- Complexity with the alphabet size method -------------
+Complexity alphabet size = 3.0
+------------- Complexity with the number of words method -------------
+Complexity number of words = 13
+------------- Complexity with the Lempel-Ziv method -------------
+Complexity Lempel-Ziv = 18
