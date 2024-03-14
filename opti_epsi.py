@@ -634,21 +634,42 @@ def opti_epsi_phi(y, length, step, visu=None, back_file=None):
     best_loss = float('inf')
     counter=0
 
+    maxpeak=0
+    minpeak=0
+    for i in range(len(y[:,0])):
+        if i-10 >= 0 and i+10 < len(y[:,0]):
+            if np.all(y[i,0] > y[i-10:i,0]) and np.all(y[i,0] > y[i+1:i+11,0]):
+                maxpeak = maxpeak+1
+            if np.all(y[i,0] < y[i-10:i, 0]) and np.all(y[i,0] < y[i+1:i+11,0]):
+                minpeak=minpeak+1
+        elif i-10 >= 0 and i+10 >= len(y[:,0]):
+            if np.all(y[i,0] > y[i-10:i,0]) and np.all(y[i,0] > y[i+1:len(y[:,0])-1,0]):
+                maxpeak = maxpeak+1
+            if np.all(y[i,0] < y[i-10:i, 0]) and np.all(y[i,0] < y[i+1:len(y[:,0])-1,0]):
+                minpeak=minpeak+1
+        elif i-10 < 0 and i+10 < len(y[:,0]):
+            if np.all(y[i,0] > y[0:i,0]) and np.all(y[i,0] > y[i+1:i+11,0]):
+                maxpeak = maxpeak+1
+            if np.all(y[i,0] < y[0:i, 0]) and np.all(y[i,0] < y[i+1:i+11,0]):
+                minpeak=minpeak+1
+
     iterations=5000
     alpha_des = 3
-    word_des = alpha_des+3
-    Lz_des_min = 11
-    Lz_des_max = 31
-    Lz_des = length/5
+    word_des = 2*(maxpeak+minpeak)
+    Lz_des_min, Lz_des_max = find_CLZ(length)
+    if y.shape[1]==2:
+        Lz_des = Lz_des_min
+    elif y.shape[1]==3:
+        Lz_des = (Lz_des_min+Lz_des_max)/2
     tol = 3
 
     while(counter<iterations):
         
         counter=counter+1
         #---------------------------------------------------------------------Initialisation----------------------------------------------------------------------------------
-        w1 = round(random.uniform(0, 10), 3)
-        w2 = round(random.uniform(0, 10), 3)
-        lam = round(random.uniform(0, 10), 3)
+        w1 = round(random.uniform(0.1, 1), 1)
+        w2 = round(random.uniform(0.1, 1), 1)
+        lam = round(random.uniform(0.1, 1), 1)
         
         phi = [w1*alpha + w2*beta + lam*gamma for alpha, beta, gamma in zip(err_tr, err_det,Sum_Pij)]
         phi_opti = min(phi)
@@ -697,8 +718,8 @@ def opti_epsi_phi(y, length, step, visu=None, back_file=None):
             return loss
 
         loss = loss_fct(alpha_des,word_des,Lz_des,C_alphabet_size,C_nbr_words,C_LZ)
-        #if loss < best_loss and C_LZ>Lz_des_min and C_LZ<Lz_des_max:
-        if loss < best_loss:
+        if loss < best_loss and C_LZ>=Lz_des_min and C_LZ<=Lz_des_max:
+        #if loss < best_loss:
             w1_best = w1
             w2_best = w2
             lam_best = lam
@@ -708,95 +729,179 @@ def opti_epsi_phi(y, length, step, visu=None, back_file=None):
             best_loss = loss
         if loss < tol:
             break
-    phi = [w1_best*alpha + w2_best*beta + lam_best*gamma for alpha, beta, gamma in zip(err_tr, err_det,Sum_Pij)]
-    """
-    print("")
-    print("\n--------------------------------------------------Results-------------------------------------------------------")
-    print('\nBest w1 = ',w1_best)
-    print('Best w2 = ', w2_best)
-    print('Best lambda = ',lam_best)
-    """
-    phi_opti = min(phi)
-    indices = [i for i in range(len(phi)) if phi[i] == phi_opti]
-    opti_epsi = [round(Epsi[i],3) for i in indices]
-    #---------------------------------------------------------------------COMBINE PHI FUNCTION WITH ENTROPY FUNCTION--------------------------------------------------
-    if len(opti_epsi)>1:
-        count = 0
-        Entropy = np.zeros(len(opti_epsi))
-        for e in opti_epsi:
-            R = np.array(D<e)
-            R=R.astype(int)
-
-            Serie = symbolic_series.symbolic_serie(R)
-
-            p = np.array(np.unique(Serie).shape[0])
-            H=0
-            occurrences = np.bincount(Serie)
-            for valeur, nb_occurrences in enumerate(occurrences):
-                if nb_occurrences > 0:
-                    pi = nb_occurrences/Serie.shape[0]
-                    H=H+pi*np.log2(pi)
-
-            Hneg = -H
-            Entropy[count]= Hneg
-            count=count+1
-
-        # Results epsilon
-        Hmax = np.max(Entropy)
-        IndxHmax = np.argmax(Entropy)
-        EpsiOptiH = opti_epsi[IndxHmax]
+    if w1_best == None:
+        print("Lempel-Ziv complexity is not good. This data can't be used.")
     else:
-        EpsiOptiH = opti_epsi[0]
-    """"
-    print('Optimal epsilon = ',EpsiOptiH)
-    print("Loss = ",best_loss)
-    print("\nTarget C_alphabet= ",alpha_des)    
-    print('C_alphabet = ', C_alpha_best)
-    print("\nTarget C_nbr_words = ",word_des)
-    print('C_words = ', C_word_best)
-    #print("\nTarget C_LZ : ",Lz_des_min," ; ",Lz_des_max)
-    print("\nTarget C_LZ = ",Lz_des)
-    print('C_LZ = ', C_Lz_best)
-    """
+      phi = [w1_best*alpha + w2_best*beta + lam_best*gamma for alpha, beta, gamma in zip(err_tr, err_det,Sum_Pij)]
+      """
+      print("")
+      print("\n--------------------------------------------------Results-------------------------------------------------------")
+      print('\nBest w1 = ',w1_best)
+      print('Best w2 = ', w2_best)
+      print('Best lambda = ',lam_best)
+      """
+      phi_opti = min(phi)
+      indices = [i for i in range(len(phi)) if phi[i] == phi_opti]
+      opti_epsi = [round(Epsi[i],3) for i in indices]
+      #---------------------------------------------------------------------COMBINE PHI FUNCTION WITH ENTROPY FUNCTION--------------------------------------------------
+      if len(opti_epsi)>1:
+          count = 0
+          Entropy = np.zeros(len(opti_epsi))
+          for e in opti_epsi:
+              R = np.array(D<e)
+              R=R.astype(int)
 
-    if visu is not None:
-      print('\n-----------Optimal Epsilon with Phi function-----------')
-      print('Optimal Epsilon = ',EpsiOptiH)
-      while(True):
-        rep = input("\nDo you want to save your result ? (Y/n): ")
-        if rep.lower() == 'y':
-          if back_file is not None:
-            with open(back_file, 'a') as fichier:
-                fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-            print(f"Optimal Epsilon with Phi function has been successfully saved in '{back_file}'")
-          else :
-            while True:
-              name_file = input("Please, give a name to your backup file: ")
-              if not os.path.exists(f'{name_file}'):
-                with open(name_file, 'w') as fichier:
+              Serie = symbolic_series.symbolic_serie(R)
+
+              p = np.array(np.unique(Serie).shape[0])
+              H=0
+              occurrences = np.bincount(Serie)
+              for valeur, nb_occurrences in enumerate(occurrences):
+                  if nb_occurrences > 0:
+                      pi = nb_occurrences/Serie.shape[0]
+                      H=H+pi*np.log2(pi)
+
+              Hneg = -H
+              Entropy[count]= Hneg
+              count=count+1
+
+          # Results epsilon
+          Hmax = np.max(Entropy)
+          IndxHmax = np.argmax(Entropy)
+          EpsiOptiH = opti_epsi[IndxHmax]
+      else:
+          EpsiOptiH = opti_epsi[0]
+      """"
+      print('Optimal epsilon = ',EpsiOptiH)
+      print("Loss = ",best_loss)
+      print("\nTarget C_alphabet= ",alpha_des)    
+      print('C_alphabet = ', C_alpha_best)
+      print("\nTarget C_nbr_words = ",word_des)
+      print('C_words = ', C_word_best)
+      #print("\nTarget C_LZ : ",Lz_des_min," ; ",Lz_des_max)
+      print("\nTarget C_LZ = ",Lz_des)
+      print('C_LZ = ', C_Lz_best)
+      """
+
+      if visu is not None:
+        print('\n-----------Optimal Epsilon with Phi function-----------')
+        print('Optimal Epsilon = ',EpsiOptiH)
+        while(True):
+          rep = input("\nDo you want to save your result ? (Y/n): ")
+          if rep.lower() == 'y':
+            if back_file is not None:
+              with open(back_file, 'a') as fichier:
                   fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-                print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
-                break
-              else:
-                  rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
-              if rep2.lower() == 'y':
-                with open(name_file, 'w') as fichier:
-                  fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-                print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
-                break
-              else:
-                rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
-              if rep3.lower() == 'y':
-                with open(name_file, 'a') as fichier:
-                  fichier.write('\n\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiH, 3)))
-                print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
-                break
-          break
-        elif rep.lower() == 'n':
-          break
-        
-    return EpsiOptiH
+              print(f"Optimal Epsilon with Phi function has been successfully saved in '{back_file}'")
+            else :
+              while True:
+                name_file = input("Please, give a name to your backup file: ")
+                if not os.path.exists(f'{name_file}'):
+                  with open(name_file, 'w') as fichier:
+                    fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+                  print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+                  break
+                else:
+                    rep2 = input(f"The file '{name_file}' already exists. Do you want to replace it ? (Y/n): ")
+                if rep2.lower() == 'y':
+                  with open(name_file, 'w') as fichier:
+                    fichier.write('\n\n-----------Optimal Epsilon with Phi function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+                  print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+                  break
+                else:
+                  rep3 = input(f"Do you want to add your serie in it ? (Y/n): ")
+                if rep3.lower() == 'y':
+                  with open(name_file, 'a') as fichier:
+                    fichier.write('\n\n-----------Optimal Epsilon with Utility function-----------' + '\n' + str(round(EpsiOptiH, 3)))
+                  print(f"Optimal Epsilon with Phi function has been successfully saved in '{name_file}'")
+                  break
+            break
+          elif rep.lower() == 'n':
+            break
+          
+      return EpsiOptiH
     
+def find_CLZ(length):
+    doc = np.array([[50, 5, 4],[100, 7, 5],[150, 9, 6],[200, 11, 7],[250, 12, 8]])
+    test=float('inf')
+    for i in range(len(doc[:,0])):
+        dist = doc[i,0]-length
+        if 0<dist and dist<test:
+            div_max = doc[i,2]
+            div_min = doc[i-1,1]
+            test=doc[i,0]-length
+        elif dist == 0:
+            div_max = doc[i,2]
+            div_min = doc[i,1]
+            break
+    tbl_lz =[]
+    lim_min=round(length/div_min)
+    lim_max=round(length/div_max)
+    while(True):
+        for i in range(10000):
+
+            num_subseries_state1 = 20
+            num_subseries_state2 = 20
+            num_subseries_state0 = 20
+
+            avg_length_state1 = 10
+            avg_length_state2 = 10
+            avg_length_state0 = 5
+
+            std_dev_length_variation = 4
+
+            subseries_state1 = []
+            subseries_state2 = []
+            subseries_state0 = []
+
+            for _ in range(num_subseries_state1):
+                subseries_length = max(1, int(np.random.normal(avg_length_state1, std_dev_length_variation)))
+                subseries_state1.append(np.ones(subseries_length))
+
+            for _ in range(num_subseries_state2):
+                subseries_length = max(1, int(np.random.normal(avg_length_state2, std_dev_length_variation)))
+                subseries_state2.append(2 * np.ones(subseries_length))
+
+            for _ in range(num_subseries_state0):
+                subseries_length = max(1, int(np.random.normal(avg_length_state0, std_dev_length_variation)))
+                subseries_state0.append(np.zeros(subseries_length))
+
+            series = []
+            state_sequence = [1, 0, 2, 0]
+            state_index = random.randint(0,2)
+
+            while len(series) < length:
+                current_state = state_sequence[state_index % len(state_sequence)]
+                
+                if current_state == 1:
+                    subseries = subseries_state1[np.random.randint(len(subseries_state1))]
+                elif current_state == 2:
+                    subseries = subseries_state2[np.random.randint(len(subseries_state2))]
+                else:
+                    subseries = subseries_state0[np.random.randint(len(subseries_state0))]
+                
+                series.extend(subseries)
+                
+                state_index += 1
+            series = np.array(series[:length])
+            C_alpha,C_word,C_LZ=symbolic_series.complexity(series)
+            tbl_lz.append(C_LZ)
+
+        count_min=0
+        count_max=0
+        for nbr in tbl_lz:
+            if nbr < lim_min:
+                count_min = count_min+1
+            if nbr > lim_max:
+                count_max = count_max+1
+        if count_min>0:
+            lim_min=lim_min-1
+        if count_max>0:
+            lim_max=lim_max+1
+        if count_min==0 and count_max==0:
+            break
+
+    return lim_min, lim_max
         
           
           

@@ -247,7 +247,8 @@ def plot_col_traj(serie, y):
         if rep2.lower() == 'y':
           break
       figure.savefig(f'{name_file}.png')
-      figure2.savefig(f'{name_file}_2D.png')
+      if y.shape[1]==3:
+        figure2.savefig(f'{name_file}_2D.png')
       print("Colored trajectory has been successfully saved")
       break
     elif rep.lower()=='n':
