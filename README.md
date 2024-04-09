@@ -123,7 +123,7 @@ Finally, it normalizes these measures and calculates the mean bewteen them and s
 
 
 **************************************************************
-**********************Module 3: espi_opti*********************
+*********************Module 3: espi_opti*********************
 **************************************************************
 
 1- epsi_entropy(y, step, visu=None, back_file=None):
