@@ -19,9 +19,9 @@ Philosphical Transactions of the Royal Society A 373:20140089 (2015)
 Physical Review Letters 110: 154101 (2013) 
 
 
-*All recent studies are made with the notebook "test_recurrence_analysis"*
-
 'Package description'
+
+*All recent studies are made with the notebook "test_recurrence_analysis"*
 
 **************************************************************
 **********************Module 1: recurrence********************
