@@ -96,10 +96,10 @@ Physical Review Letters 110: 154101 (2013)
 	Moreover this functions permits to save the figure in a file.png.
 
 
-4- complexity(serie, visu=None, back_file=None):
+4- complexity(y, xy, serie, visu=None, back_file=None):
 
-* Inputs : numpy array 1 dimension (serie), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
-* Outputs : 3 integer (C_alphabet_size, C_nbr_words, C_LZ)
+* Inputs : 2 numpy array 2 or 3 dimensions (y, xy), numpy array 1 dimension (serie), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
+* Outputs : 3 integer (C_alphabet_size, C_nbr_words, C_LZ), 2 floats (score, regularity (See "6- regularity_score(...)" and "7- correspondance(...)"))
 
 	This function computes and returns the complexity of a symbolic serie (serie) with 3 different methods: the alphabet size, the number of words, and the Lempel_Ziv complexity. Moreover, the user can save these 3 integer into a back_file.txt.
 
@@ -112,6 +112,14 @@ Physical Review Letters 110: 154101 (2013)
 	This function randomise multiple times (default : "count" = 100) the 3D points of "y". Then, for each randomisation, it computes the three complexity measures.
 	Finally, it plots the histogram of the complexity measures and plot the one before randomisation in red. This permits to see if the real complexity can be interpreted or if it is too close to the one of 	a random trajectory.
 	Moreover this functions permits to save the figure in a file.png.
+
+6- regularity_score(serie, visu=None):
+
+* Inputs : numpy array 1 dimension (serie), optional parameter : "visu" (if not None -> print the results)
+* Outputs : 3 floats (regularity,regu,moyetype)
+
+	This function gives a score of regularity to the serie to classify the patient diagnosis. Firstly, it calculates the mean of the standard deviation of the size of the same states ( = "moyetype"). Example : 1,1,1,0,0,2,2,0,1,1,0,2,2,0,1,1,1,1,0,0. Here I have 3 words of "1's" and 2 words of "2's". len("1's") = 3,2 and 4, so the standard deviation is sqrt(2/3). Then, it calculates the lempel-ziv complexity ( = "regu") of the serie and the error on the alphabet size (should be 3 in a normal gait) : delta_alpabet_size = abs(real_alphabet_size - ideal_alphabet_size)/ideal_alphabet_size.
+Finally, it normalizes these measures and calculates the mean bewteen them and store it in "regularity".
 
 
 **************************************************************
@@ -131,22 +139,31 @@ Physical Review Letters 110: 154101 (2013)
 * Inputs : (:,{1,2, or 3}) numpy array (y), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
 * Outputs : plot the utility function of epsilon, float	(EpsioptiU)
 
-	This function iterates through various epsilon values within a range from 0 to the maximum distance between each pair of points in the trajectory, advancing from a user-defined step. It uses the Markov 	model of the symbolic serie the calculate the composed maximal trace of the transition matrix from the Markov model, the probability to leave a transcient, and the probability to come to a transcient. 	This composed computation is called utility function. Then, it returns and save in a file.txt the optimal epsilon corresponding to the composed maximal utility function. Moreover, it plots the utility 	function with respect to epsilon and save it in a back_file.png.
+	This function iterates through various epsilon values within a range from 0 to the maximum distance between each pair of points in the trajectory, advancing from a user-defined step. It uses the Markov model of the symbolic serie the calculate the composed maximal trace of the transition matrix from the Markov model, the probability to leave a transcient, and the probability to come to a transcient. This composed computation is called utility function. Then, it returns and save in a file.txt the optimal epsilon corresponding to the composed maximal utility function. Moreover, it plots the utility 	function with respect to epsilon and save it in a back_file.png.
 
 
-3- test_epsi(y):
+3- opti_epsi_phifct(y, step, visu=None, back_file=None):
+
+* Inputs : (:,{1,2, or 3}) numpy array (y), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
+* Outputs : float (EpsioptiH)
+
+	This is an optimisation of "5- opti_epsi_phi(y, length, step, visu=None, back_file=None)" (see below) to determines the optimal value for epsilon. It takes into account an ideal transition matrix based on a markov model where to go from a metastable states to another, trajectory must before goes through the "0" state. The function tests a range of epsilons. For each epsilon it calculates the symbolic serie and the corresponding transition matrix. Then, it determines the one that gives the transititon matrix the closest to the ideal one. This corresponds to the epsilon that minimize the function phi. This function takes 4 parameters into account are : matrix determinant and trace (should be the closest to the ideal transition matrix), the sum of the transition probability between two metastable states (should be near 0), and the error of alphabet size : abs(real_alphabet_size - 3)/3 (because optimal serie should have 3 differents states). These parameters are normalized to have all the same weight in the function.
+Phi(epsilon) = w1*delta_det + w2*delta_trace + w3*sum_transition_meta_states + w4*delta_alphabet_size. We choose as the optimal epsilon, the one that minimizes this phi(epsilon) function.
+
+4- test_epsi(y):
 
 * Inputs : (:,{1,2, or 3}) numpy array (y)
 * Outputs : *
 
-	This function permits to quickly change the epsilon's value while iterating the whole RASCoPy program (all the functions described in module 1 and 2). When the RASCoPy program ends, you can decide either 	to save the results if they are satisfying, or try a new value of epsilon if they are not.
+	This function permits to quickly change the epsilon's value while iterating the whole RASCoPy program (all the functions described in module 1 and 2). When the RASCoPy program ends, you can decide either to save the results if they are satisfying, or try a new value of epsilon if they are not.
 
-4- opti_epsi_phi(y, length, step, visu=None, back_file=None):
+5- opti_epsi_phi(y, xy, length, step, visu=None, back_file=None):
 
-* Inputs : (:,{1,2, or 3}) numpy array (y), integer (length), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
+* Inputs : (:,{1,2, or 3}) numpy array (y, xy), integer (length), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
 * Outputs : float (EpsioptiH)
 
-	This function determines the optimal value for epsilon. It takes into account an ideal transition matrix based on a markov model where to go from a metastable states to another, trajectory must before 	goes through the "0" state. The function tests a range of epsilons and determines the one that gives the transititon matrix the closest to the ideal one.
+	This function determines the optimal value for epsilon. It takes into account an ideal transition matrix based on a markov model where to go from a metastable states to another, trajectory must before goes through the "0" state. The function tests a range of epsilons. For each epsilon it calculates the symbolic serie and the corresponding transition matrix. Then, it determines the one that gives the transititon matrix the closest to the ideal one. This corresponds to the epsilon that minimize the function phi. This function takes 3 parameters into account are : matrix determinant and trace (should be the closest to the ideal transition matrix), and the sum of the transition probability between two metastable states (should be near 0).
+Phi(epsilon) = w1*delta_det + w2*delta_trace + w3*sum_transition_meta_states. The weights (w1,w2,w3) are determined with a loss function : l(w1,w2,w3) = delta_alphabet_size + delta_number_of_words + delta_lempel_ziv_complexity. delta_alpabet_size = abs(real_alphabet_size - ideal_alphabet_size)/ideal_alphabet_size. (idem for other delta_...). The ideal alphabet_size = 3 during a normal gait. The ideal lempel-ziv complexity and number of words are estimated on an ideal regular serie of the same size the studied one. For example if the studied serie is : 1,0,1,1,0,3,2,0,2,2,0,1,1, we will take for the ideal serie : 1,1,1,1,0,3,3,0,2,2,0,1,1. So the ideal number of words = 7 and the ideal L-Z complexity = 8. So the wieghts combinaison that minimizes l(w1,w2,w3) are the optimal weights. With these ones, we calculate phi(epsilon) for each values of epsilon and take the epsilon that minimizes phi(epsilon).
 
 
 **************************************************************
@@ -174,12 +191,12 @@ Physical Review Letters 110: 154101 (2013)
 
 MAIN FUNCTION OF THE PACKAGE :
 
-1- rascopy(start_frame=None, end_frame=None, dimensions=3):
+1- rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=None):
 
-* Inputs : 3 optionnal inputs : integer (start_frame), integer (end_frame), integer (dimensions)
+* Inputs : 6 optionnal inputs : integer (loop, dimens, meth), string (joints, bound, feat) all separated by a ","
 * Ouputs : The entire recurrence analysis of videos contained in a file.json.
 
-	This function is like a software of recurrence analysis. With this function you can decide : which json to open, which video, which joint or group of joints you want to analyze (see paragraph "joints"), 	which features of analysis you want to see and/or save (see paragraph "features"), in which dimensions ("dimensions") you want to make the analysis and how many frames you want to take into account 		("start_frame", and "end_frame").  
+	This function is like a software of recurrence analysis. With this function you can decide : which json to open, which video, which joint or group of joints you want to analyze (see paragraph "joints"), which features of analysis you want to see and/or save (see paragraph "features"), in which dimensions ("dimensions") you want to make the analysis and how many frames you want to take into account 	("start_frame", and "end_frame"). If 'loop' != None, it will run the anylsis on all the videos contained in the .json file. Since you can analyze multiple videos or joints in a row, you can enter at the beginning all the parameters (dimensions "dimens", bounds of the video "bound", joints to analyze "joints", features to visualize "feat", optimal epsilon method "meth") if they are the same for all videos/joints. 
 
 
 ***********************************************************************************************Methods**********************************************************************************************************
