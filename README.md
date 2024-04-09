@@ -26,7 +26,7 @@ Physical Review Letters 110: 154101 (2013)
 *All recent studies are made with the notebook "test_recurrence_analysis"*
 
 **************************************************************
-**********************Module 1: recurrence********************
+********************Module 1: recurrence********************
 **************************************************************
 
 1- rec_mat(y, epsilon, visu=None, back_file=None):
@@ -64,7 +64,7 @@ Physical Review Letters 110: 154101 (2013)
 
 
 **************************************************************
-*******************Module 2: symbolic_series******************
+******************Module 2: symbolic_series******************
 **************************************************************
 
 1- symbolic_serie(R, visu=None, back_file=None):
@@ -186,7 +186,7 @@ Phi(epsilon) = w1*delta_det + w2*delta_trace + w3*sum_transition_meta_states. Th
 
 
 **************************************************************
-**********************Module 5: rascopy***********************
+**********************Module 5: rascopy**********************
 **************************************************************
 
 MAIN FUNCTION OF THE PACKAGE :
