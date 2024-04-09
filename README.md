@@ -188,8 +188,9 @@ These are the numbers attributed to each method to determine the optimal epsilon
 0 : entropy
 1 : utility function
 2 : mean of entropy and utility
-3 : test_epsi
-4 : phi function
+3 : phi function v2
+4 : test_epsi
+5 : phi function
 
 
 ***********************************************************************************************Features**********************************************************************************************************
