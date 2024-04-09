@@ -50,8 +50,10 @@ def symbolic_serie(R, visu=None, back_file=None):
       if (Serie[i]!=Serie[i-1] and Serie[i]!=Serie[0]) and np.count_nonzero(Serie == Serie[i])==1:
         newSerie[i]=0
   for i in newSerie:
-     if np.count_nonzero(newSerie == i) <= 2:
-        newSerie[np.where(newSerie == i)] = 0
+    if np.count_nonzero(newSerie == i) <= 4:
+    #if np.count_nonzero(newSerie == i) <= 3:
+    #if np.count_nonzero(newSerie == i) <= 2:
+      newSerie[np.where(newSerie == i)] = 0
         
 
   #-----------------------------------------------------------------------------
@@ -109,7 +111,7 @@ def symbolic_serie(R, visu=None, back_file=None):
 
   return newSerie
 
-def colored_sym_serie(serie, y):
+def colored_sym_serie(serie, y, register=None):
   y = np.array(y)
   position = 0
   palette = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'black', 'pink', 'brown', 'gray', 'turquoise', 'indigo', 'beige', 'olive', 'cyan', 'magenta', 'gold', 'silver', 'coral', 'lavender', 'chartreuse', 'orangered', 'aquamarine', 'skyblue', 'pumpkin', 'emerald']
@@ -136,24 +138,24 @@ def colored_sym_serie(serie, y):
     ax.text(int(serie.shape[0])/2, 0.25,"Red: transient state / Other colors: metastable states", fontsize=9, ha='center', va='center')
 
     plt.show(block=False)
-
-    print('\n-----------Colored symbolic serie-----------')
-    while(True):
-      rep = input("Do you want to save this colored symbolic serie plot ? (Y/n): ")
-      if rep.lower() == 'y':
-        while True:
-          name_file = input("Please, give a name to your plot: ")
-          if not os.path.exists(f'{name_file}.png'):
-            break
-          else:
-              rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-          if rep2.lower() == 'y':
-            break
-        plt.savefig(f'{name_file}.png')
-        print("Colored symbolic serie plot has been successfully saved")
-        break
-      elif rep.lower() == 'n':
-        break
+    if(register != None):
+      print('\n-----------Colored symbolic serie-----------')
+      while(True):
+        rep = input("Do you want to save this colored symbolic serie plot ? (Y/n): ")
+        if rep.lower() == 'y':
+          while True:
+            name_file = input("Please, give a name to your plot: ")
+            if not os.path.exists(f'{name_file}.png'):
+              break
+            else:
+                rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+            if rep2.lower() == 'y':
+              break
+          plt.savefig(f'{name_file}.png')
+          print("Colored symbolic serie plot has been successfully saved")
+          break
+        elif rep.lower() == 'n':
+          break
   else:
     print("Your data is too complexe to plot the colored symbolic serie")
 
@@ -255,7 +257,9 @@ def plot_col_traj(serie, y):
        break
 
 
-def complexity(serie, visu=None, back_file=None):
+def complexity(y, xy, serie, visu=None, back_file=None):
+    score=None
+    regularity=None
     # Alphabet size
     C_alphabet_size = np.max(serie)+1
     if visu != None:
@@ -321,6 +325,10 @@ def complexity(serie, visu=None, back_file=None):
     if visu != None:
       print('\n------------- Complexity with the Lempel-Ziv method -------------')
       print('Complexity Lempel-Ziv = ' + str(C_LZ))
+      print('\n----------------- Correspondance with healty gait -----------------')
+      score = correspondance(serie, y, xy)
+      print('\n------------------------ Regularity score ------------------------')
+      regularity,regu,moyetype = regularity_score(serie, visu)
       print('\n')
       if back_file is not None:
         while(True):
@@ -333,6 +341,10 @@ def complexity(serie, visu=None, back_file=None):
               fichier.write('Complexity number of words = ' + str(C_nbr_words))
               fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
               fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ) + '\n')
+              fichier.write('\n------------- Correspondance with healty gait -------------\n')
+              fichier.write('Correspondance score = ' + str(score) + '%\n')
+              fichier.write('\n------------------------ Regularity score ------------------------\n')
+              fichier.write('Regularity score = ' + str(round(regularity,2)) + '%\n')
             print(f"Complexity measures have been successfully saved in {back_file}")
             break
           elif rep.lower() == 'n':
@@ -355,6 +367,10 @@ def complexity(serie, visu=None, back_file=None):
                   fichier.write('Complexity number of words = ' + str(C_nbr_words))
                   fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
                   fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ) + '\n')
+                  fichier.write('\n------------- Correspondance with healty gait -------------\n')
+                  fichier.write('Correspondance score = ' + str(score) + '%\n')
+                  fichier.write('\n------------------------ Regularity score ------------------------\n')
+                  fichier.write('Regularity score = ' + str(round(regularity,2)) + '%\n')
                 print(f"Complexity measures have been successfully saved in {name_file}")
                 break
               else:
@@ -367,16 +383,20 @@ def complexity(serie, visu=None, back_file=None):
                   fichier.write('Complexity number of words = ' + str(C_nbr_words))
                   fichier.write('\n------------- Complexity with the Lempel-Ziv method -------------\n')
                   fichier.write('Complexity Lempel-Ziv = ' + str(C_LZ)+ '\n')
+                  fichier.write('\n------------- Correspondance with healty gait -------------\n')
+                  fichier.write('Correspondance score = ' + str(score) + '%\n')
+                  fichier.write('\n------------------------ Regularity score ------------------------\n')
+                  fichier.write('Regularity score = ' + str(round(regularity,2)) + '%\n')
                 print(f"Complexity measures have been successfully saved in {name_file}")
                 break
             break
           elif rep.lower() == 'n':
             break
 
-    return C_alphabet_size, C_nbr_words, C_LZ
+    return C_alphabet_size, C_nbr_words, C_LZ, score, regularity
 
 
-def complexity_shuffle(y, step, count=100, back_file = None):
+def complexity_shuffle(y, xy, step, count=100, back_file = None):
   y2 = y
   alphabet = []
   words= []
@@ -385,7 +405,7 @@ def complexity_shuffle(y, step, count=100, back_file = None):
   epsi = opti_epsi.epsi_entropy(y,step)
   R = recurrence.rec_mat(y, epsi)
   serie = symbolic_serie(R)
-  alpha, word, lz = complexity(serie)
+  alpha, word, lz, score, regularity = complexity(y, xy,serie)
   alphabet.append(alpha)
   words.append(word)
   lempelZiv.append(lz)
@@ -395,7 +415,7 @@ def complexity_shuffle(y, step, count=100, back_file = None):
     epsi = opti_epsi.epsi_entropy(y2,step)
     R = recurrence.rec_mat(y2, epsi)
     serie = symbolic_serie(R)
-    alpha, word, lz = complexity(serie)
+    alpha, word, lz, regularity = complexity(y, xy,serie)
     alphabet.append(alpha)
     words.append(word)
     lempelZiv.append(lz)
@@ -585,3 +605,523 @@ def complexity_shuffle(y, step, count=100, back_file = None):
       break
     elif rep.lower() == 'n':
       break
+
+def nbr_state(serie):
+    serie = serie.astype(int)
+    s = np.unique(serie)
+    dic_nbr = {}
+    dic_loc = {}
+    for i in range(1,len(s)):
+        dic_nbr[str(i)] = 0
+        dic_loc[str(i)] = []
+    for i in range(len(serie)-1):
+        if serie[i]!=0:
+          dic_loc[str(serie[i])].append(i)
+        if serie[i] != serie[i+1] and serie[i]!=0:
+            dic_nbr[str(serie[i])]=dic_nbr[str(serie[i])]+1
+        if i == len(serie)-2 and serie[i]==serie[i+1] and serie[i]!=0:
+            dic_nbr[str(serie[i])]=dic_nbr[str(serie[i])]+1
+            dic_loc[str(serie[i])].append(i)
+        elif i == len(serie)-2 and serie[i]!=serie[i+1]and serie[i+1]!=0:
+            dic_nbr[str(serie[i+1])]=dic_nbr[str(serie[i+1])]+1
+            dic_loc[str(serie[i+1])].append(i+1)
+    return dic_nbr,dic_loc
+
+def reco_state(serie,y):
+  dic_nbr,dic_loc = nbr_state(serie)
+  dic_state = {}
+  miniz = np.min(y[:,2])
+  maxiz = np.max(y[:,2])
+  minix = np.min(y[:,0])
+  maxix = np.max(y[:,0])
+  tier_min_z = miniz+1/5*(maxiz-miniz)
+  tier_x = minix + (maxix+minix)/3
+  print(dic_loc)
+  for j in range(1,len(dic_nbr)+1):
+    p=0
+    for i in dic_loc[str(j)]:
+      if y[i,2] < tier_min_z and y[i,0] > tier_x:
+        p = p+0
+      elif y[i,2] > tier_min_z or y[i,0] < tier_x:
+        p = p+1
+    p=p/len(dic_loc[str(j)])
+    if abs(p-1)<abs(p):
+      state = 'max'
+    else:
+      state ='min'
+    dic_state[str(j)] = state
+  return dic_state
+
+"""def correspondance(serie, y, xy):
+    serie = np.array(serie)
+    serie = serie.astype(int)
+    xy = np.array(xy)
+    serie.astype(int)
+    xy.astype(int)
+    maxpeak,minpeak = opti_epsi.nbr_peaks(xy)
+    dic,dic_loc = nbr_state(serie)
+    dic_state = reco_state(serie,xy)
+
+    score = 0
+    sc_etat = 0
+    sc_min = 0
+    sc_max = 0
+    sc_alpha = 0
+    sc_peak = 0
+    etat=0
+    maxmin=0
+
+    if 'max' in dic_state.values() and 'min' in dic_state.values():
+       maxmin = 1
+    else:
+       maxmin = 0
+
+    i=0
+    while(i<len(serie)):
+        corresp=0
+        prem=i
+        if str(serie[i]) in dic_state and dic_state[str(serie[i])]=='max':
+            etat=etat+1
+            if i<len(serie)-1 and serie[i]==serie[i+1]:
+                while(i<len(serie)-1 and serie[i]==serie[i+1]):
+                    if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 and xy[i,2]>xy[i+1,2]:
+                        corresp = corresp+1
+                    i=i+1
+                if i<len(serie)-1 and serie[i]!=serie[i+1]:
+                    if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 and xy[i,2]>xy[i+1,2]:
+                        corresp = corresp+1
+                if i == len(serie)-1:
+                    if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2:
+                        corresp = corresp+1
+            elif i<len(serie)-1:
+                if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 and xy[i,2]>xy[i+1,2]:
+                    corresp = corresp+1
+            elif i==len(serie)-1:
+                if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2:
+                    corresp = corresp+1
+
+        elif str(serie[i]) in dic_state and dic_state[str(serie[i])]=='min':
+            etat=etat+1
+            if i<len(serie)-1 and serie[i]==serie[i+1]:
+                while(i<len(serie)-1 and serie[i]==serie[i+1]):
+                    if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*0.8+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*0.8+np.min(xy[:,2]):
+                        corresp = corresp+1
+                    i=i+1
+                if i<len(serie)-1 and serie[i]!=serie[i+1]:
+                    if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*0.8+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*0.8+np.min(xy[:,2]):
+                        corresp = corresp+1
+                if i == len(serie)-1:
+                    if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*0.8+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*0.8+np.min(xy[:,2]):
+                        corresp = corresp+1
+            else:
+                if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*0.8+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*0.8+np.min(xy[:,2]):
+                    corresp = corresp+1    
+        der = i+1
+        if corresp > (der-prem)*0.5:
+            sc_etat = sc_etat+1
+        i=i+1
+  
+    score = score + sc_etat/etat
+    nbr_min = 0
+    nbr_max = 0
+    for i in range(1,len(dic_state)+1):
+        if dic_state[str(i)] == 'min':
+            nbr_min = nbr_min+dic[str(i)]
+        if dic_state[str(i)] == 'max':
+            nbr_max = nbr_max+dic[str(i)]
+
+    sc_max = 1-abs(nbr_max-maxpeak)/max(nbr_max, maxpeak)
+    sc_min = 1-abs(nbr_min-minpeak)/max(nbr_min, minpeak)
+    sc_peak = (sc_max+sc_min)/2
+
+    C_alpha,C_word,C_LZ_test,sco,regularity=complexity(y,xy,serie)
+    sc_alpha = ((1-abs(C_alpha-3)/max(C_alpha,3))+maxmin)/2
+    score = score+sc_alpha
+    score= score+sc_peak
+    score=score/3
+    score=round(score*100,2)
+    
+    print("\nScore state xz : ",round(sc_etat/etat,2))
+    #print("sc_max = 1-abs(",nbr_max,"-",maxpeak,")/",max(nbr_max, maxpeak))
+    print("Score peak max : ",round(sc_max,2))
+    #print("sc_max = 1-abs(",nbr_min,"-",minpeak,")/",max(nbr_min, minpeak))
+    print("Score peak min : ",round(sc_min,2))
+    print("Score alphabet size complexity : ",round(sc_alpha,2))
+    print("\nThe correspondance with a healthy gait is : ",score,"%")
+    
+    return score"""
+
+def regularity_score(serie, visu=None):
+  serie = np.array(serie)
+  serie = serie.astype(int)
+  a_size_des = 3
+  a_size_reel = len(np.unique(serie))
+  a_size = abs((a_size_reel-a_size_des)/a_size_des)*100
+  if visu!=None:
+    print("Alphabet size = ",a_size)
+  
+  lines = len(np.unique(serie))
+  nbr_symb=np.zeros(lines)
+  order = []
+  for i in range(len(serie)-1):
+    if i == 0:
+        nbr_symb[serie[i]] = nbr_symb[serie[i]]+1
+        order.append(serie[i])
+    if serie[i]!=serie[i+1]:
+        nbr_symb[serie[i+1]] = nbr_symb[serie[i+1]]+1
+        order.append(serie[i+1])
+  nbr_symb = nbr_symb.astype(int)
+  if visu!=None:
+    print("Number of symbols = ",nbr_symb)
+
+  oc=[]
+  for i in np.unique(order):
+    oc.append(order.count(i))
+  size_words = []
+  for i in range(len(oc)):
+    size_words.append([0] * oc[i])  
+  j=0
+  c=0
+  for i in range(len(serie)-1):
+    size_words[serie[i]][j] = size_words[serie[i]][j]+1
+    if serie[i]!=serie[i+1]:
+      if c==0:
+        del size_words[serie[i]][0]
+      c=c+1
+      j=0
+      while(j<len(size_words[serie[i+1]])):
+        if size_words[serie[i+1]][j]==0:
+          break
+        else:
+          j=j+1
+    if i==len(serie)-2:
+      del size_words[serie[i+1]][-1]
+  del size_words[0]
+  etype=[]
+  #longu=[]
+  for i in range(len(size_words)):
+    if size_words[i]!=[]:
+      ecarttype = np.std(size_words[i])
+      moyenne = np.mean(size_words[i])
+      #long = moyenne*nbr_symb[i+1]/len(serie)
+      #longu.append(abs((long-(1/len(nbr_symb)))/(1/len(nbr_symb)))*100)
+      etype.append((ecarttype/moyenne)*100)
+
+  moyetype = round(np.mean(etype),2)
+  #moylongu = round(np.mean(longu),2)
+  #print("\nMean of standard deviation of state lengths = ",moyetype)
+  if visu!=None:
+    print("Normalized mean of standard deviation of state lengths = ",round(moyetype,2),"%")
+  #print("Relative words size error = ",moylongu,"%")
+
+  def pattern_in_serie(w, s):
+    w_str = ''
+    s_str = ''
+    for a in w:
+      w_str=w_str+str(a)
+    for b in s:
+      s_str = s_str+str(b)
+    return s_str in w_str
+  C_LZ = 0
+  i = 0
+  W_LZ = []
+  W_LZ.append(order[i])
+  i = 1
+  while i < len(order):
+      j = i
+      Bool = pattern_in_serie(W_LZ[:j], str(order[j]))
+      if Bool == False:
+          W_LZ.append(str(order[i]))
+          i = i + 1
+      else:
+          while Bool == True:
+              j = j + 1
+              if j >= len(order):
+                  break
+              Bool = pattern_in_serie(W_LZ[:j], order[i:j + 1])
+          W_LZ.append(''.join(map(str, order[i:j + 1])))
+          i = j + 1
+  C_LZ = len(W_LZ)
+  #print("\nRegularity of the states sequence = ",C_LZ)
+
+  ideal=[]
+  s=[]
+  l=len(np.unique(order))
+  le = len(order)
+  prem = order[0]
+  cou=0
+  for i in range(2*l-2):
+    if prem == 0:
+      if i%2==0:
+        s.append(0)
+      else:
+        cou=cou+1
+        s.append(cou)
+    else:
+      if i%2==0:
+        cou=cou+1
+        s.append(cou)
+      else:
+        s.append(0)
+
+  for i in range(le):
+    ideal.append(s[i%len(s)])
+
+  C_LZi = 0
+  ii = 0
+  W_LZi = []
+  W_LZi.append(ideal[ii])
+  ii = 1
+  while ii < len(ideal):
+      ji = ii
+      Booli = pattern_in_serie(W_LZi[:ji], str(ideal[ji]))
+      if Booli == False:
+          W_LZi.append(str(ideal[ii]))
+          ii = ii + 1
+      else:
+          while Booli == True:
+              ji = ji + 1
+              if ji >= len(ideal):
+                  break
+              Booli = pattern_in_serie(W_LZi[:ji], ideal[ii:ji + 1])
+          W_LZi.append(''.join(map(str, ideal[ii:ji + 1])))
+          ii = ji + 1
+  C_LZi = len(W_LZi)
+  regu = abs((C_LZ-C_LZi)/C_LZi)*100
+  if visu!=None:
+    print("Normalized regularity of the states sequence = ",round(regu,2),"%")
+  print(ideal)
+  print(order)
+  #regularity=(regu+moyetype+moylongu)/3
+  regularity=(regu+moyetype+a_size)/3
+  if visu!=None:
+    print("\nThe regularity score of the gait is = ",round(regularity,2),"\n\n")
+  return regularity,regu,moyetype
+
+def regularity_shuffle(regularity1, serie, back_file=None):
+
+  fig1=plt.figure()
+  ax1 = fig1.add_subplot(111)
+  ax1.set_title('Total Regularity Score')
+  ax1.scatter(0,regularity1, color='red', marker='o')
+
+  serie2 = serie.copy()
+  regularity=regu=moyetype=[]
+
+  for i in range(100):
+    np.random.shuffle(serie2)
+    r1,r2,m1 = regularity_score(serie2)
+    regularity.append(r1)
+    regu.append(r2)
+    moyetype.append(m1)
+
+  lin=np.linspace(1, len(regularity), len(regularity))
+  ax1.scatter(lin,regularity, color='blue', marker='o')
+  plt.show(block=False)
+  print("\n\n-----------T-test non-parametric Wilcoxon-Mann-Whitney-----------")
+  u_statistic_alpha, p_value = mannwhitneyu(regularity, [regularity1])
+  if p_value<=0.1:
+    print("P value = ",p_value," <= 0.1")
+    print("T Test is valid")
+  else:
+    print("P value = ",p_value," > 0.1")
+    print("T Test invalide, data is not representative")
+
+  print('\n-----------Regularity analysis-----------')
+  while(True):
+    rep = input("Do you want to save this analysis ? (Y/n): ")
+    if rep.lower() == 'y':
+      while True:
+        name_file = input("Please, give a name to your plot: ")
+        if not os.path.exists(f'{name_file}.png'):
+          break
+        else:
+            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
+        if rep2.lower() == 'y':
+          break
+      fig1.savefig(f'{name_file}_dot.png')
+      if back_file != None:
+        with open(back_file, 'a') as fichier:
+          fichier.write('\n------------- Mann Withney U T-Test -------------\n')
+          fichier.write(f'\nP value for Alphabet Size = {p_value}')
+      else: 
+        while True:
+          name_file = input("Please, give a name to your backup file: ")
+          if not os.path.exists(f'{name_file}'):
+            a=0
+            break
+          else:
+            rep3 = input(f"The file '{name_file}' already exists. Do you want to write your t-test results inside? (Y/n): ")
+            if rep3.lower() == 'y':
+              a=1
+              break
+            else:
+              rep4 = input(f"Do you want to replace '{name_file}'? (Y/n): ")
+              if rep4.lower() == 'y':
+                a=2
+                break
+        if a == 0 or a == 2:
+          with open(name_file, 'w') as fichier:
+            fichier.write('\n\n------------- Mann Withney U T-Test -------------\n')
+            fichier.write(f'\nP value for Alphabet Size = {p_value}\n')
+          print(f"T-test results have been successfully saved in {name_file}")
+        if a == 1:
+          with open(name_file, 'a') as fichier:
+            fichier.write('\n------------- Mann Withney U T-Test -------------\n')
+            fichier.write(f'\nP value for Alphabet Size = {p_value}')
+          print(f"T-test results have been successfully saved in {name_file}")
+
+      print("Complexity analysis has been successfully saved")
+      break
+    elif rep.lower()== 'n':
+      break
+
+def correspondance(serie, y, xy):
+    serie = np.array(serie)
+    serie = serie.astype(int)
+    xy = np.array(xy)
+    serie.astype(int)
+    xy.astype(int)
+    maxpeak,minpeak = opti_epsi.nbr_peaks(xy)
+    dic,dic_loc = nbr_state(serie)
+    dic_state = reco_state(serie,y)
+
+    score = 0
+    sc_etat = 0
+    sc_min = 0
+    sc_max = 0
+    sc_alpha = 0
+    sc_peak = 0
+    etat=0
+    maxmin=0
+
+    if 'max' in dic_state.values() and 'min' in dic_state.values():
+       maxmin = 1
+    else:
+       maxmin = 0
+
+    i=0
+    while(i<len(serie)):
+        corresp=0
+        prem=i
+        if str(serie[i]) in dic_state and dic_state[str(serie[i])]=='max':
+            etat=etat+1
+            if i<len(serie)-1 and serie[i]==serie[i+1]:
+                while(i<len(serie)-1 and serie[i]==serie[i+1]):
+                    #if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 and xy[i,2]>xy[i+1,2]:
+                    if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 or xy[i,2]>(4/5*np.min(xy[:,2])+1/5*np.max(xy[:,2])):
+                        corresp = corresp+1
+                    i=i+1
+                if i<len(serie)-1 and serie[i]!=serie[i+1]:
+                    if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 or xy[i,2]>(4/5*np.min(xy[:,2])+1/5*np.max(xy[:,2])):
+                        corresp = corresp+1
+                if i == len(serie)-1:
+                    if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 or xy[i,2]>(4/5*np.min(xy[:,2])+1/5*np.max(xy[:,2])):
+                        corresp = corresp+1
+            elif i<len(serie)-1:
+                if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 or xy[i,2]>(4/5*np.min(xy[:,2])+1/5*np.max(xy[:,2])):
+                    corresp = corresp+1
+            elif i==len(serie)-1:
+                if xy[i,0]>(np.max(xy[:,0])+np.min(xy[:,0]))/2 or xy[i,2]>(4/5*np.min(xy[:,2])+1/5*np.max(xy[:,2])):
+                    corresp = corresp+1
+
+        elif str(serie[i]) in dic_state and dic_state[str(serie[i])]=='min':
+            etat=etat+1
+            if i<len(serie)-1 and serie[i]==serie[i+1]:
+                while(i<len(serie)-1 and serie[i]==serie[i+1]):
+                    if xy[i,0]>(np.max(xy[:,0])-np.min(xy[:,0]))*1/3+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*1/5+np.min(xy[:,2]):
+                        corresp = corresp+1
+                    i=i+1
+                if i<len(serie)-1 and serie[i]!=serie[i+1]:
+                    if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*1/3+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*1/5+np.min(xy[:,2]):
+                        corresp = corresp+1
+                if i == len(serie)-1:
+                    if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*1/3+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*1/5+np.min(xy[:,2]):
+                        corresp = corresp+1
+            else:
+                if xy[i,0]<(np.max(xy[:,0])-np.min(xy[:,0]))*1/3+np.min(xy[:,0]) and xy[i,2]<(np.max(xy[:,2])-np.min(xy[:,2]))*1/5+np.min(xy[:,2]):
+                    corresp = corresp+1    
+        der = i+1
+        if corresp > (der-prem)*0.5:
+            sc_etat = sc_etat+1
+        i=i+1
+  
+    score = score + sc_etat/etat
+    nbr_min = 0
+    nbr_max = 0
+    for i in range(1,len(dic_state)+1):
+        if dic_state[str(i)] == 'min':
+            nbr_min = nbr_min+dic[str(i)]
+        if dic_state[str(i)] == 'max':
+            nbr_max = nbr_max+dic[str(i)]
+
+    sc_max = 1-abs((nbr_max-maxpeak)/maxpeak)
+    sc_min = 1-abs((nbr_min-minpeak)/minpeak)
+
+    C_alpha,C_word,C_LZ_test,sco,regularity=complexity(y,xy,serie)
+    sc_alpha = 1-abs((C_alpha-3)/3)
+    score = score+sc_alpha + sc_max + sc_min
+    regularity,regu,moyetype = regularity_score(serie)
+    regu = 1-regu/100
+    score = score + regu
+    score=score/5
+    score=round(score*100,2)
+    
+    print("\nScore state xz : ",round(sc_etat/etat,2))
+    #print("sc_max = 1-abs(",nbr_max,"-",maxpeak,")/",maxpeak,")")
+    print(dic," : ", dic_state)
+    print("Score peak max : ",round(sc_max,2))
+    #print("sc_max = 1-abs(",nbr_min,"-",minpeak,"/",minpeak,")")
+    print("Score peak min : ",round(sc_min,2))
+    print("Score alphabet size complexity : ",round(sc_alpha,2))
+    print("Score regularity : ",round(regu,2))
+    print("\nThe correspondance with a healthy gait is : ",score,"%")
+    
+    return score
+
+
+def lempel_ziv(serie, visu=None):
+  serie = np.array(serie)
+  serie = serie.astype(int)
+
+  order = []
+  for i in range(len(serie)-1):
+    if i == 0:
+        order.append(serie[i])
+    if serie[i]!=serie[i+1]:
+        order.append(serie[i+1])
+
+  def pattern_in_serie(w, s):
+    w_str = ''
+    s_str = ''
+    for a in w:
+      w_str=w_str+str(a)
+    for b in s:
+      s_str = s_str+str(b)
+    return s_str in w_str
+  
+  C_LZ = 0
+  i = 0
+  W_LZ = []
+  W_LZ.append(order[i])
+  i = 1
+  while i < len(order):
+      j = i
+      Bool = pattern_in_serie(W_LZ[:j], str(order[j]))
+      if Bool == False:
+          W_LZ.append(str(order[i]))
+          i = i + 1
+      else:
+          while Bool == True:
+              j = j + 1
+              if j >= len(order):
+                  break
+              Bool = pattern_in_serie(W_LZ[:j], order[i:j + 1])
+          W_LZ.append(''.join(map(str, order[i:j + 1])))
+          i = j + 1
+  C_LZ = len(W_LZ)
+  C_LZ_n = C_LZ/len(order)
+  if visu != None : 
+    print("\n\n Regularity of the sequence = ",C_LZ)
+    print("Normalized regularity of the sequence = ",C_LZ_n)
+  return C_LZ
