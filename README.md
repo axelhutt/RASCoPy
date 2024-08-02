@@ -20,11 +20,21 @@ Physical Review Letters 110: 154101 (2013)
 
 
 
+****************************************************************!! Five main codes are provided : "rascopy.py" and "Complexity_Analysis..ipynb" !!****************************************************************
 
-'Package description'
+* **rascopy.py**: Permits to make single recurrence and complexity analyses on a unique video. The program asks you to choose the parameters of the analysis and the features to visualize. To run it: "import rascopy; rascopy.rascopy()".
+  
+* **Complexity_Analysis.ipynb**: Jupyter notebook which permits to run the recurrence and complexity analyses on an entire .json file containing multiple videos. It uses maximum entropy to determine the optimal epsilon. The joints to analyze need to be modified on the notebook. All results are save on "rec_analysis.xlsx".
+  
+* **Sl_TF.ipynb**: This is the program to make the classification with the neural network. It contains all different classification problems.
 
-*All recent studies are made with the notebook "test_recurrence_analysis"*
+* **surrogate.ipynb**: This code permits to run a surrogate data test on classification accuracy values.
 
+* **Mann-whitney_2-sided**: This code permits to run a Mann-whitney 2-sided test on accuracy values contained in a .xlsx file.
+
+
+******************************************************************************************************************************************************************************************************************
+										'RASCoPy package description'
 **************************************************************
 ********************Module 1: recurrence********************
 **************************************************************
@@ -131,7 +141,7 @@ Finally, it normalizes these measures and calculates the mean bewteen them and s
 * Inputs : (:,{1,2, or 3}) numpy array (y), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
 * Outputs : plot the entropy function of epsilon, float	(EpsioptiH)
 
-	This function iterates through various epsilon values within a range from 0 to the maximum distance between each pair of points in the trajectory, advancing from a user-defined step. It computes during 	each iteration the Shannon's entropy of the symbolic serie. Then, it returns and save in a file.txt the optimal epsilon corresponding to the maximal entropy. Moreover, it plots the entropy function of 	epsilon and save it in a back_file.png.
+	This function iterates through various epsilon values within a range from 0 to the maximum distance between each pair of points in the trajectory, advancing from a user-defined step. It computes during each iteration the Shannon's entropy of the symbolic serie. Then, it returns and save in a file.txt the optimal epsilon corresponding to the maximal entropy. Moreover, it plots the entropy function of epsilon and save it in a back_file.png.
 
 
 2- epsi_utility(y, step, visu=None, back_file=None):
@@ -147,23 +157,24 @@ Finally, it normalizes these measures and calculates the mean bewteen them and s
 * Inputs : (:,{1,2, or 3}) numpy array (y), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
 * Outputs : float (EpsioptiH)
 
-	This is an optimisation of "5- opti_epsi_phi(y, length, step, visu=None, back_file=None)" (see below) to determines the optimal value for epsilon. It takes into account an ideal transition matrix based on a markov model where to go from a metastable states to another, trajectory must before goes through the "0" state. The function tests a range of epsilons. For each epsilon it calculates the symbolic serie and the corresponding transition matrix. Then, it determines the one that gives the transititon matrix the closest to the ideal one. This corresponds to the epsilon that minimize the function phi. This function takes 4 parameters into account are : matrix determinant and trace (should be the closest to the ideal transition matrix), the sum of the transition probability between two metastable states (should be near 0), and the error of alphabet size : abs(real_alphabet_size - 3)/3 (because optimal serie should have 3 differents states). These parameters are normalized to have all the same weight in the function.
+	This function determines the optimal value for epsilon. It takes into account an ideal transition matrix based on a markov model where to go from a metastable states to another, trajectory must before goes through the "0" state. The function tests a range of epsilons. For each epsilon it calculates the symbolic serie and the corresponding transition matrix. Then, it determines the one that gives the transititon matrix the closest to the ideal one. This corresponds to the epsilon that minimize the function phi. This function takes 4 parameters into account are : matrix determinant and trace (should be the closest to the ideal transition matrix), the sum of the transition probability between two metastable states (should be near 0), and the error of alphabet size : abs(real_alphabet_size - 3)/3 (because optimal serie should have 3 differents states). These parameters are normalized to have all the same weight in the function.
 Phi(epsilon) = w1*delta_det + w2*delta_trace + w3*sum_transition_meta_states + w4*delta_alphabet_size. We choose as the optimal epsilon, the one that minimizes this phi(epsilon) function.
 
-4- test_epsi(y):
+
+4- epsi_entropy_n(y, step, visu=None, back_file=None):
+
+* Inputs : (:,{1,2, or 3}) numpy array (y), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
+* Outputs : plot the entropy function of epsilon, float	(EpsioptiH)
+
+	This function is similar to epsi_entropy(...). The additional content is written in **black**. It iterates through various epsilon values within a range from 0 to the maximum distance between each pair of points in the trajectory, advancing from a user-defined step. It computes during each iteration the Shannon's entropy of the symbolic serie. Then, it returns and save in a file.txt the optimal epsilon corresponding to the maximal entropy **normalized by the number of states in the resulting symbolic sequence. This avoids small states to appear in the symbolic sequence**. Moreover, it plots the entropy function of epsilon and save it in a back_file.png.
+
+
+5- test_epsi(y):
 
 * Inputs : (:,{1,2, or 3}) numpy array (y)
 * Outputs : *
 
 	This function permits to quickly change the epsilon's value while iterating the whole RASCoPy program (all the functions described in module 1 and 2). When the RASCoPy program ends, you can decide either to save the results if they are satisfying, or try a new value of epsilon if they are not.
-
-5- opti_epsi_phi(y, xy, length, step, visu=None, back_file=None):
-
-* Inputs : (:,{1,2, or 3}) numpy array (y, xy), integer (length), float (step), two optional parameters : "visu" (if not None -> print the resulting matrix), and "back_file" (name of the backup file if you want to save the results) 
-* Outputs : float (EpsioptiH)
-
-	This function determines the optimal value for epsilon. It takes into account an ideal transition matrix based on a markov model where to go from a metastable states to another, trajectory must before goes through the "0" state. The function tests a range of epsilons. For each epsilon it calculates the symbolic serie and the corresponding transition matrix. Then, it determines the one that gives the transititon matrix the closest to the ideal one. This corresponds to the epsilon that minimize the function phi. This function takes 3 parameters into account are : matrix determinant and trace (should be the closest to the ideal transition matrix), and the sum of the transition probability between two metastable states (should be near 0).
-Phi(epsilon) = w1*delta_det + w2*delta_trace + w3*sum_transition_meta_states. The weights (w1,w2,w3) are determined with a loss function : l(w1,w2,w3) = delta_alphabet_size + delta_number_of_words + delta_lempel_ziv_complexity. delta_alpabet_size = abs(real_alphabet_size - ideal_alphabet_size)/ideal_alphabet_size. (idem for other delta_...). The ideal alphabet_size = 3 during a normal gait. The ideal lempel-ziv complexity and number of words are estimated on an ideal regular serie of the same size the studied one. For example if the studied serie is : 1,0,1,1,0,3,2,0,2,2,0,1,1, we will take for the ideal serie : 1,1,1,1,0,3,3,0,2,2,0,1,1. So the ideal number of words = 7 and the ideal L-Z complexity = 8. So the wieghts combinaison that minimizes l(w1,w2,w3) are the optimal weights. With these ones, we calculate phi(epsilon) for each values of epsilon and take the epsilon that minimizes phi(epsilon).
 
 
 **************************************************************
@@ -206,9 +217,9 @@ These are the numbers attributed to each method to determine the optimal epsilon
 0 : entropy
 1 : utility function
 2 : mean of entropy and utility
-3 : phi function v2
-4 : test_epsi
-5 : phi function
+3 : phi function
+4 : normalized entropy
+5 : test_epsi
 
 ****************************************************************************************************************************************************************************************************************
 **********************************************************************************Features**********************************************************************************
