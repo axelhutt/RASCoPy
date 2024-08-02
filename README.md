@@ -34,6 +34,7 @@ Physical Review Letters 110: 154101 (2013)
 
 * **histogramme**: This code permits to plot histogramme representing the distribution of each labels (gait score or diagnosis) for each complexity measures.
 
+**The dataset used is the "data_20-03.json", all results are in "Results.xlsx"**
 
 ******************************************************************************************************************************************************************************************************************
 'RASCoPy package description'
