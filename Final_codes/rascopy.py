@@ -559,11 +559,11 @@ def rascopy():
               xy=xyz[:,start_frame:end_frame,:]
               
               while(True):
-                method = input("\nWhich optimal epsilon method ? ")
-                if method.isdigit() == True:
+                method = input("\nWhich optimal epsilon method (number between 0 and 5) ? ")
+                if method.isdigit() == True and int(method)<6 and int(method)>=0:
                   break
                 else: 
-                  print("method should be a number")
+                  print("method should be a number between 0 and 5")
               method = int(method)
               visu = input("\nEnter the numbers of the features you want to visualize (separated by ','): ")
               visu_list = []
@@ -693,8 +693,7 @@ def rascopy():
                   epsi = opti_epsi.epsi_entropy_n(y, step)
                   test=1
                 elif method == 5:
-                  epsi, alpha_des, word_des, Lz_des_min, Lz_des_max = opti_epsi.opti_epsi_phi(y, xy, y.shape[0], step)
-                  test=1
+                  test=0
                 else:
                   print("Method doesn't exist")
                   test=2
