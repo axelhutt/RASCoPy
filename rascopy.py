@@ -205,8 +205,8 @@ def open_json(data=None, videoname=None):
         score_disease = get_scor[scor]
         diag_disease = get_diag[diagno]
         diagnosis = diag_disease+' -- '+score_disease
-        print(vname, " : " , diagnosis)
-        print("length: ", video['joints3D'].shape[0])
+        print(videoname, " : " , diagnosis)
+        print("length: ", x.shape[1])
         sex = 'Ukwn'
 
       print("\nData extracted")
@@ -313,7 +313,7 @@ def open_json(data=None, videoname=None):
         diag_disease = get_diag[diagno]
         diagnosis = diag_disease+' -- '+score_disease
         print(videoname, " : " , diagnosis)
-        print("length: ", video['joints3D'].shape[0])
+        print("length: ", x.shape[1])
         sex = 'Ukwn'
 
       print("Data extracted")
@@ -390,9 +390,7 @@ def open_json(data=None, videoname=None):
 
 
 
-def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=None):
-  alpha_des = word_des = Lz_des_min = Lz_des_max = 0
-  if loop == None:
+def rascopy():
     fin = ''
     while(fin != 'y'):
         x,diag,sex,name,vid,di = open_json()
@@ -401,60 +399,45 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
         while(v!='n'):
           condition = 0
           ctrl=0
+          cond2=0
           stop=''
-          while(condition!=1):
-              mean_single = input("\nSingle joint or joint's mean analysis ? (s/m): ")
-
-              if mean_single.lower() == 's':
-                cotrl=0
-                while(cotrl!=1):
-                  a = input("\nWhich joint to you want to analyze ? (number bewteen 0 and 24): ")
-                  ctrl=0
-                  for char in a:
-                    if (ord(char)<48 or ord(char)>57) and ord(char)!=44:
-                      ctrl=ctrl+1
-                    elif (ord(char)>=48 and ord(char)<=57) or ord(char)==44:
-                      ctrl=ctrl
-                  if ctrl == 0 and a!='' and len(a)<=2:
-                    if int(a)>=0 and int(a)<25:
-                      back_file = name+"_"+vid+"_"+a
-                      a = int(a)
-                      xyz = x[a, :, :]
-                      T=xyz.shape[0]
-                      condition=1
-                      cotrl=1
-
-              elif mean_single.lower() == 'm':
-                while(True):
-                  a = input("\nWhich joints to you want to analyze ? (numbers bewteen 0 and 24 separated by ','): ")
-                  ctrl=0
-                  for char in a:
-                    if (ord(char)<48 or ord(char)>57) and ord(char)!=44:
-                      ctrl=ctrl+1
-                    elif (ord(char)>=48 and ord(char)<=57) or ord(char)==44:
-                      ctrl=ctrl
-                  if ctrl == 0 and a!='' and a[-1]!=',':
-                    a_list = []
-                    cond=0
-                    for string in a.split(','):
-                      if int(string)>0 and int(string)<25:
-                        cond = cond
-                      else:
-                        cond=cond+1
-                    if cond == 0:
-                      nm=''
-                      for string in a.split(','):
-                        a_list.append(int(string))
-                        nm = nm+string
-                      back_file = name+"_"+vid+"_mean_"+nm
-                      xyz = np.mean(x[a_list,:,:],axis=0)
-                      T=xyz.shape[0]
-                      condition=1
-                      break
-                    else:
-                      print('Error in the number of the joints')
-                  else:
-                    print('Error in the number of the joints')
+          ccc=0
+          while(ccc==0):
+            a = input("\nWhich joints to you want to analyze ? (numbers bewteen 0 and 24 separated by ','): ")
+            b = input("\nWhich is your reference joints for 3-steps segmentation ? (14 or 18): ")
+            if b == "14" or b == "18":
+              ankle_side = int(b)
+              cond2 = 0
+            else:
+              cond2=1
+            ctrl=0
+            for char in a:
+              if (ord(char)<48 or ord(char)>57) and ord(char)!=44:
+                ctrl=ctrl+1
+              elif (ord(char)>=48 and ord(char)<=57) or ord(char)==44:
+                ctrl=ctrl
+            if ctrl == 0 and a!='' and a[-1]!=',':
+              a_list = []
+              cond=0
+              for string in a.split(','):
+                if int(string)>0 and int(string)<25:
+                  cond = cond
+                else:
+                  cond=cond+1
+              if cond == 0 and cond2==0:
+                nm=''
+                for string in a.split(','):
+                  a_list.append(int(string))
+                  nm = nm+string
+                back_file = name+"_"+vid+"_mean_"+nm
+                xyz = x[a_list,:,:]
+                T=xyz.shape[1]
+                ccc=1
+                condition=1
+              else:
+                print('Error in the number of the joints')
+            else:
+              print('Error in the number of the joints')
 
           c=0
           control=0
@@ -489,18 +472,15 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
             while(stop!='s'):
               plt.figure()
               times = np.linspace(0,T,T)
-              plt.plot(times, xyz[:,0], color='red', label='X coordinate')
-              plt.plot(times, xyz[:,1], color='blue', label = 'Y coordinate')
-              plt.plot(times, xyz[:,2], color='green', label = 'Z coordinate')
+              plt.plot(times, x[ankle_side,:,0], color='red', label='X coordinate')
+              plt.plot(times, x[ankle_side,:,1], color='blue', label = 'Y coordinate')
+              plt.plot(times, x[ankle_side,:,2], color='green', label = 'Z coordinate')
               plt.xlabel('Time')
               plt.ylabel('Position')
-              if mean_single == 's':
-                plt.title(f"{nam[a]}'s mouvement on each coordinate")
-              elif mean_single == 'm':
-                nom=''
-                for n in a_list:
-                  nom = nom+nam[n]+', '
-                plt.title(f"Mouvement's mean of {nom} on each coordinate")
+              nom=''
+              for n in a_list:
+                nom = nom+nam[n]+', '
+              plt.title(f"Mouvement's mean of {nom} on each coordinate")
               plt.legend()
               plt.show(block=False)
     
@@ -554,37 +534,36 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
               
               start_frame = None
               end_frame = None
-              while(True):
-                fr = input("\nEnter the video bound frames (separated by a ',') : ")
-                if fr == "":
-                  break
-                else:
-                  c=0
-                  for char in fr.split(","):
-                    if char.isdigit():
-                      c=c+1
-                      if c==1:
-                        start_frame=int(char)
-                      if c==2:
-                        end_frame=int(char)
-                  if c==2:
-                    break
-              if start_frame!=None and end_frame!=None:
-                y=xyz[start_frame:end_frame,:]
-                xy=xyz[start_frame:end_frame,:]
-              elif start_frame==None and end_frame!=None:
-                y=xyz[:end_frame,:]
-                xy=xyz[:end_frame,:]
-              elif start_frame!=None and end_frame==None:
-                y=xyz[start_frame:,:]
-                xy=xyz[start_frame:,:]
+              fr = None
+              maxmin = ""
+              ypeak = x[ankle_side,:,:]
+              maxp,minp,locp = opti_epsi.nbr_peaks(ypeak)
+              first = min(min(locp['max']),min(locp['min'])) 
+              if first in locp['max']:
+                maxmin = 'max'
+              if first in locp['min']:
+                maxmin='min'
 
               while(True):
-                method = input("\nWhich optimal epsilon method ? ")
-                if method.isdigit() == True:
+                fr = input("\nEnter the 3-steps segmentation n° you want to analyze: (first segmentation = 1): ")
+                fr=int(fr)
+                if fr < len(locp[maxmin])-2:
+                  start_frame = locp[maxmin][fr-1]
+                  end_frame = locp[maxmin][fr+2]
+                  break
+                else:
+                  print("Error in segmentation number")
+                  
+              
+              y=xyz[:,start_frame:end_frame,:]
+              xy=xyz[:,start_frame:end_frame,:]
+              
+              while(True):
+                method = input("\nWhich optimal epsilon method (number between 0 and 5) ? ")
+                if method.isdigit() == True and int(method)<6 and int(method)>=0:
                   break
                 else: 
-                  print("method should be a number")
+                  print("method should be a number between 0 and 5")
               method = int(method)
               visu = input("\nEnter the numbers of the features you want to visualize (separated by ','): ")
               visu_list = []
@@ -593,26 +572,23 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
               
               if("1" in visu_list):
                 plt.figure()
-                Ty=y.shape[0]
+                Ty=y.shape[1]
                 times = np.linspace(0,Ty,Ty)
-                if y.shape[1] == 3:
-                  plt.plot(times, y[:,0], color='red', label='X coordinate')
-                  plt.plot(times, y[:,1], color='blue', label = 'Y coordinate')
-                  plt.plot(times, y[:,2], color='green', label = 'Z coordinate')
-                if y.shape[1] == 2:
-                  plt.plot(times, y[:,0], color='red', label=f'{dim[0]} coordinate')
-                  plt.plot(times, y[:,1], color='blue', label = f'{dim[2]} coordinate')
-                if y.shape[1] == 1:
-                  plt.plot(times, y[:,0], color='red', label=f'{dim[0]} coordinate')
+                if y.shape[2] == 3:
+                  plt.plot(times, x[ankle_side,start_frame:end_frame,0], color='red', label='X coordinate')
+                  plt.plot(times, x[ankle_side,start_frame:end_frame,1], color='blue', label = 'Y coordinate')
+                  plt.plot(times, x[ankle_side,start_frame:end_frame,2], color='green', label = 'Z coordinate')
+                if y.shape[2] == 2:
+                  plt.plot(times, x[ankle_side,start_frame:end_frame,0], color='red', label=f'{dim[0]} coordinate')
+                  plt.plot(times, x[ankle_side,start_frame:end_frame,1], color='blue', label = f'{dim[2]} coordinate')
+                if y.shape[2] == 1:
+                  plt.plot(times, x[ankle_side,start_frame:end_frame,0], color='red', label=f'{dim[0]} coordinate')
                 plt.xlabel('Time')
                 plt.ylabel('Position')
-                if mean_single == 's':
-                  plt.title(f"{nam[a]}'s mouvement on each coordinate")
-                elif mean_single == 'm':
-                  nom=''
-                  for n in a_list:
-                    nom = nom+nam[n]+', '
-                  plt.title(f"Mouvement's mean of {nom} on each coordinate")
+                nom=''
+                for n in a_list:
+                  nom = nom+nam[n]+', '
+                plt.title(f"Mouvement's mean of {nom} on each coordinate")
                 plt.legend()
                 plt.show(block=False)
                 while(True):
@@ -634,15 +610,15 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
 
               if("2" in visu_list):
                 fig = plt.figure()
-                if y.shape[1] == 3:
+                if y.shape[2] == 3:
                   ax = fig.add_subplot(111, projection='3d')
-                  ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
+                  ax.plot(x[ankle_side,start_frame:end_frame,0], x[ankle_side,start_frame:end_frame,1], x[ankle_side,start_frame:end_frame,2], color='blue', label='Trajectory')
                   ax.set_xlabel('X')
                   ax.set_ylabel('Y')
                   ax.set_zlabel('Z')
                   plt.title('Trajectory in 3D')
-                if y.shape[1] == 2:
-                  plt.plot(y[:, 0], y[:, 1], color='blue', label='Trajectory')
+                if y.shape[2] == 2:
+                  plt.plot(x[ankle_side,start_frame:end_frame,0], x[ankle_side,start_frame:end_frame,1], color='blue', label='Trajectory')
                   plt.xlabel(dim[0])
                   plt.ylabel(dim[2])
                   plt.title('Trajectory in 2D')
@@ -665,13 +641,15 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
                     break
 
               if("3" in visu_list):
-                recurrence.anim_traj(y)
+                recurrence.anim_traj(x[ankle_side,:,:])
 
               step = 0.001
               test2=1
+              y = np.reshape(y.transpose(1, 0, 2), (y.shape[1], y.shape[0]*y.shape[2]))
 
               if("4" in visu_list):
                 if method == 0:
+                  
                   epsi = opti_epsi.epsi_entropy(y, step, 1, back_file)
                   test=1
                 elif method == 1:
@@ -686,9 +664,10 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
                   epsi = opti_epsi.opti_epsi_phifct(y,step,1,back_file)
                   test=1
                 elif method == 4:
-                  test=0
+                  epsi = opti_epsi.epsi_entropy_n(y, step, 1, back_file)
+                  test=1
                 elif method == 5:
-                  epsi, alpha_des, word_des, Lz_des_min, Lz_des_max = opti_epsi.opti_epsi_phi(y, xy, y.shape[0], step, 1, back_file)
+                  epsi, alpha_des, word_des, Lz_des_min, Lz_des_max = opti_epsi.opti_epsi_phi(y, xy, y.shape[2], step, 1, back_file)
                   test=1
                 else:
                   print("Method doesn't exist")
@@ -711,10 +690,10 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
                   epsi = opti_epsi.opti_epsi_phifct(y,step)
                   test=1
                 elif method == 4:
-                  test=0
-                elif method == 5:
-                  epsi, alpha_des, word_des, Lz_des_min, Lz_des_max = opti_epsi.opti_epsi_phi(y, xy, y.shape[0], step)
+                  epsi = opti_epsi.epsi_entropy_n(y, step)
                   test=1
+                elif method == 5:
+                  test=0
                 else:
                   print("Method doesn't exist")
                   test=2
@@ -749,10 +728,7 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
                 if("9" in visu_list):
                   recurrence.col_rec_plt(serie, R)
                 if("10" in visu_list):
-                  symbolic_series.plot_col_traj(serie,y)
-                if("11" in visu_list):
-                  C_alphabet_size, C_nbr_words, C_LZ, score, regularity = symbolic_series.complexity(y,xy,serie,1,back_file)
-                  clz = symbolic_series.lempel_ziv(serie,1)
+                  symbolic_series.plot_col_traj(serie,x[ankle_side,:,:])                 
 
                 ans = input("\nAre these results satisfying ? (Y/n): ")
                 if ans.lower() == 'y':
@@ -771,107 +747,524 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
                     serie = symbolic_series.symbolic_serie(R,1,back_file)
                   else:
                     serie = symbolic_series.symbolic_serie(R)
-                    uniqSerie = np.unique(serie)
                   if("8" in visu_list):
                     symbolic_series.colored_sym_serie(serie,y)
                   if("9" in visu_list):
                     recurrence.col_rec_plt(serie, R)
                   if("10" in visu_list):
-                    symbolic_series.plot_col_traj(serie,y)
-                  if("11" in visu_list):
-                    print("\n(Targets : Alphabet Size : ",alpha_des," | Number of words : ",word_des, " | Lempel-Ziv : [",Lz_des_min,";",Lz_des_max,"]")
-                    C_alphabet_size, C_nbr_words, C_LZ, score, regularity = symbolic_series.complexity(y,xy, serie,1,back_file)
-                    clz = symbolic_series.lempel_ziv(serie,1)
-                    if di == 0:
-                      donnees = pd.read_excel('label_info_120.xlsx')
-                      if a+',R' in donnees.columns:
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        if ligne[a+',R'].isna().all():
-                          donnees.loc[ligne.index, a+',R'] = round(regularity,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)
-                        else:
-                          while(True):
-                            resp = input("Do you want to erase previous regularity value ? (Y/n): ")
-                            if resp.lower()=='y':
-                              donnees.loc[ligne.index, a+',R'] = round(regularity,2)
-                              donnees.to_excel('label_info_120.xlsx', index=False)
-                              break
-                            elif resp.lower()=='n':
-                              break
-                      else:
-                        donnees[a+',R'] = np.nan
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        donnees.loc[ligne.index, a+',R'] = round(regularity,2)
-                        donnees.to_excel('label_info_120.xlsx', index=False)
+                    symbolic_series.plot_col_traj(serie,x[ankle_side,:,:])
 
-                      if a+',C' in donnees.columns:
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        if ligne[a+',C'].isna().all():
-                          donnees.loc[ligne.index, a+',C'] = round(score,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)
-                        else:
-                          while(True):
-                            resp = input("Do you want to erase previous correspondance value ? (Y/n): ")
-                            if resp.lower()=='y':
-                              donnees.loc[ligne.index, a+',C'] = round(score,2)
-                              donnees.to_excel('label_info_120.xlsx', index=False)
-                              break
-                            elif resp.lower()=='n':
-                              break
-                      else:
-                        donnees[a+',C'] = np.nan
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        donnees.loc[ligne.index, a+',C'] = round(score,2)
-                        donnees.to_excel('label_info_120.xlsx', index=False)
+                  cplx = input("Do you want to analyse the complexity ? (Y/n)")
 
-                      if a+',clz' in donnees.columns:
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        if ligne[a+',clz'].isna().all():
-                          donnees.loc[ligne.index, a+',clz'] = round(clz,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)
-                        else:
-                          while(True):
-                            resp = input("Do you want to erase previous clz value ? (Y/n): ")
-                            if resp.lower()=='y':
-                              donnees.loc[ligne.index, a+',clz'] = round(clz,2)
-                              donnees.to_excel('label_info_120.xlsx', index=False)
-                              break
-                            elif resp.lower()=='n':
-                              break
-                      else:
-                        donnees[a+',clz'] = np.nan
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        donnees.loc[ligne.index, a+',clz'] = round(clz,2)
-                        donnees.to_excel('label_info_120.xlsx', index=False)
+                  if cplx.lower() == 'y':
+                    stance = []
+                    swing = []
+                    if first in locp['max']:
+                      if len(locp['min'])==len(locp['max']) or len(locp['min'])==len(locp['max'])-1:
+                          for i in range(len(locp['min'][fr-1:fr+2])):
+                              if (locp['min'][i+fr-1] != locp['min'][-1] or locp['min'][-1] < locp['max'][-1]) and (locp['max'][i+fr-1] != locp['max'][0]):
+                                  stance.append(abs(locp['min'][i+fr-1]-locp['max'][i+fr-1]))
+                              if (len(locp['min'])==len(locp['max']) and i!=len(locp['min'])-1) or (len(locp['min'])==len(locp['max'])-1):
+                                  if locp['max'][i+fr] != locp['max'][-1] or locp['max'][-1] < locp['min'][-1]:
+                                      swing.append(abs(locp['max'][i+fr]-locp['min'][i+fr-1]))
+                    if first in locp['min']:
+                        if len(locp['min'])==len(locp['min']) or len(locp['max'])==len(locp['min'])-1:
+                            for i in range(len(locp['max'][fr-1:fr+2])):
+                                if (len(locp['max'])==len(locp['min']) and i!=len(locp['max'])-1) or (len(locp['max'])==len(locp['min'])-1):
+                                    if locp['min'][i+fr] != locp['min'][-1] or locp['min'][-1] < locp['max'][-1]:
+                                        stance.append(abs(locp['max'][i+fr-1]-locp['min'][i+fr]))
+                                if (locp['max'][i+fr-1] != locp['max'][-1] or locp['max'][-1] < locp['min'][-1]) and (locp['min'][i+fr-1]!=locp['min'][0]):
+                                    swing.append(abs(locp['min'][i+fr-1]-locp['max'][i+fr-1]))
+                    C_swing = np.std(swing)
+                    C_stance = np.std(stance)
+                    print("")
+                    print("C_swing= ",C_swing)
+                    print("C_stance = ",C_stance)
+                    print("")
 
-                      if a+',CLZ' in donnees.columns:
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        if ligne[a+',CLZ'].isna().all():
-                          donnees.loc[ligne.index, a+',CLZ'] = round(C_LZ,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)
+                    leg_length = math.sqrt((x[12,0,0]-x[13,0,0])**2+(x[12,0,1]-x[13,0,1])**2+(x[12,0,2]-x[13,0,2])**2)+math.sqrt((x[13,0,0]-x[14,0,0])**2+(x[13,0,1]-x[14,0,1])**2+(x[13,0,2]-x[14,0,2])**2)
+                    # C_stepperiod
+                    C_stepperiod = (y.shape[0]/3)/leg_length
+                    print("Leg length = ",round(round(leg_length,4)*100,2),"cm")
+                    print("")
+                    print("C_stepperiod = ",C_stepperiod)
+
+                    # C_aplhabet-size
+                    alphabet_size = len(np.unique(serie))
+                    print("C_aplhabet-size = ",alphabet_size)
+
+                    # -------------------------------- C_Number-of-words -----------------------------------------
+                    a = 0
+                    b = 0
+                    W_nw = []
+                    for i in range(len(serie)-1):
+                        w = ''
+                        if serie[i] != serie[i+1]:
+                            for j in range(a, i+1, 1):
+                                w = w + str(int(serie[j]))
+                            W_nw.append(w)
+                            a = i + 1
+                        if i == len(serie)-2:
+                            for j in range(a, i+2, 1):
+                                w = w + str(int(serie[j]))
+                            W_nw.append(w)
+                    unique = set(W_nw)
+                    C_nbr_words = len(unique)
+                    print("C_Number-of-words = ",C_nbr_words)
+                    # -------------------------------------------------------------------------------------------
+
+                    # ----------------------------------------- C_arms ------------------------------------------
+                    if (6 in a_list or 10 in a_list) and 2 not in a_list: # If there are only arms joints in the analysis
+                        ideb = 0
+                        amplitude = []
+                        if 6 in a_list: # Default: take the left wrist into account
+                            side = 6
+                        elif 10 in a_list: # Otherwise, take the right wrist
+                            side = 10
+                        # Searching for max amplitude in each step
+                        if first in locp['min']:
+                            for ifin in locp['min'][fr:fr+3]:
+                                amplitude.append(abs(max(x[side,ideb:ifin,0])-min(x[side,ideb:ifin,0])))
+                                ideb = ifin
+                        elif first in locp['max']:
+                            for ifin in locp['max'][fr:fr+3]:
+                                amplitude.append(abs(max(x[side,ideb:ifin,0])-min(x[side,ideb:ifin,0])))
+                                ideb = ifin
+                        aberrant = max(amplitude) #Removing the maximum amplitude to avoid data errors due to noise 
+                        s_amplitude = 0
+                        cnt=0
+                        for i in amplitude:
+                            if i != aberrant:
+                                s_amplitude = s_amplitude+i
+                                cnt = cnt+1
+                        C_arms = s_amplitude/cnt # Mean maximum amplitude of each step
+                        print("C_arms = ",C_arms)
+                    # -------------------------------------------------------------------------------------------
+
+                    stock=[]
+                    countarg={}
+                    if 0 in serie:
+                        k=np.zeros(len(np.unique(serie)))
+                    else:
+                        k=np.zeros(len(np.unique(serie))+1)
+                    k=k.astype(int)
+                    serie = serie.astype(int)
+                    stockarg = {} # This contains the center frame position of each metastable states appearance
+
+                    temp = serie[0]
+                    indic_zero=[]
+                    c_z=0
+                    c_s1=0
+                    c_s2=0
+                    aaa=0
+                    
+                    for i in range (len(serie)-1):
+                        if serie[i]==0 and serie[i+1]==temp and temp!=0:
+                            aaa=1
+                        if serie[i]==0:
+                            c_z = c_z+1
+                        if serie[i]!=0 and aaa==0:
+                            c_s1=c_s1+1
+                        if serie[i]!=0 and aaa==1:
+                            c_s2=c_s2+1
+                        if aaa==1 and serie[i]==temp and serie[i+1]!=serie[i]:
+                            if c_z>=0.8*(C_stepperiod*leg_length -(c_s1+c_s2)):
+                                indic_zero.append(1)
+                            else:
+                                indic_zero.append(0)
+                            c_z=0
+                            c_s1=c_s2
+                            aaa=0
+                            c_s2=0
+                        if aaa==0 and serie[i+1]!=0 and serie[i+1]!=serie[i] and serie[i+1]!=temp:
+                            temp=serie[i+1]
+                            c_z=0
+                            c_s1=0
+                            c_s2=0
+                        if i == len(serie)-2:
+                            if aaa==1 and serie[i+1]==temp:
+                                c_s2=c_s2+1
+                                if c_z>=0.8*(C_stepperiod*leg_length -(c_s1+c_s2)):
+                                    indic_zero.append(1)
+                                else:
+                                    indic_zero.append(0)
+
+                    for i in range (1,len(serie)):
+                        if serie[i-1] in stockarg:
+                            if 0 <= k[serie[i-1]] < len(stockarg[serie[i-1]]):
+                                stockarg[serie[i-1]][k[serie[i-1]]]=stockarg[serie[i-1]][k[serie[i-1]]]+i-1
+                                countarg[serie[i-1]][k[serie[i-1]]]=countarg[serie[i-1]][k[serie[i-1]]]+1
+                            else:
+                                stockarg[serie[i-1]].append(i-1)
+                                countarg[serie[i-1]].append(1)    
                         else:
-                          while(True):
-                            resp = input("Do you want to erase previous CLZ value ? (Y/n): ")
-                            if resp.lower()=='y':
-                              donnees.loc[ligne.index, a+',CLZ'] = round(C_LZ,2)
-                              donnees.to_excel('label_info_120.xlsx', index=False)
-                              break
-                            elif resp.lower()=='n':
-                              break
-                      else:
-                        donnees[a+',CLZ'] = np.nan
-                        ligne = donnees.loc[donnees['vidname'] == vid]
-                        donnees.loc[ligne.index, a+',CLZ'] = round(C_LZ,2)
-                        donnees.to_excel('label_info_120.xlsx', index=False)
-            
-                if test!=2 and test2!=2 and "11" in visu_list:
-                  while(True):
-                    shuf = input("\nDo you want to analyse the regularity ? (Y/n): ")
-                    if shuf.lower() == 'y':
-                      symbolic_series.regularity_shuffle(regularity, serie, back_file)
-                      break
-                    elif shuf.lower() == 'n':
-                      break
+                            stockarg[serie[i-1]]=[]
+                            stockarg[serie[i-1]].append(i-1)
+                            countarg[serie[i-1]]=[]
+                            countarg[serie[i-1]].append(1)
+
+                        if serie[i]!=serie[i-1]:
+                            stock.append(serie[i-1])
+                            if i == len(serie)-1:
+                                stock.append(serie[i])
+                                if serie[i] in stockarg:
+                                    stockarg[serie[i]].append(i)
+                                    countarg[serie[i]].append(1)
+                                else:
+                                    stockarg[serie[i]]=[]
+                                    stockarg[serie[i]].append(i)
+                                    countarg[serie[i]]=[]
+                                    countarg[serie[i]].append(1)
+                            if serie[i-1] in stock:
+                                k[serie[i-1]]=k[serie[i-1]]+1
+
+                        if i == len(serie)-1 and serie[i]==serie[i-1]:
+                            stock.append(serie[i])
+                            stockarg[serie[i]][k[serie[i]]]=stockarg[serie[i]][k[serie[i]]]+i
+                            countarg[serie[i]][k[serie[i]]]=countarg[serie[i]][k[serie[i]]]+1
+
+                    if 0 in serie:
+                        k=np.zeros(len(np.unique(stock)))
+                    else:
+                        k=np.zeros(len(np.unique(stock))+1)
+                    k=k.astype(int)
+                    iz=0
+                    for i in range(len(stock)-2):
+                        k[stock[i]] = k[stock[i]]+1
+                        if stock[i]!=0 and stock[i]==stock[i+2] and stock[i+1] == 0:
+                            if indic_zero[iz]==0:
+                                stockarg[stock[i]][k[stock[i]]-1] = stockarg[stock[i]][k[stock[i]]-1] + stockarg[stock[i]][k[stock[i]]]
+                                stockarg[stock[i]].pop(k[stock[i]])
+                                countarg[stock[i]][k[stock[i]]-1] = countarg[stock[i]][k[stock[i]]-1] + countarg[stock[i]][k[stock[i]]]
+                                countarg[stock[i]].pop(k[stock[i]])
+                                k[stock[i]]=k[stock[i]]-1
+                            iz=iz+1
+
+                    for key in stockarg:
+                        for val in range(len(stockarg[key])):
+                            stockarg[key][val] = stockarg[key][val]/countarg[key][val]
+            # ------------------------------------------------------------------------------------------------------------------------------------------
+                    
+                    # Calculation of the frame distance between each metastable state
+                    distance={} 
+                    for key in stockarg: 
+                        if key!=0:
+                            for val in range(len(stockarg[key])-1):
+                                dist=stockarg[key][val+1]-stockarg[key][val]
+                                if key in distance:
+                                    distance[key].append(dist)
+                                else:
+                                    distance[key]=[]
+                                    distance[key].append(dist)
+
+                    # Calculate the number of state's appearances
+                    f=[]
+                    for key in stockarg:
+                        if key!=0:
+                            f.append(len(stockarg[key]))
+                     
+                    # ----------------------------------------------- C_appearance ---------------------------------------------------
+                    erreur_rec = []
+                    for i in f:
+                        if i<3:
+                            err = abs(i-3)/3
+                        elif i>4:
+                            err = abs(i-4)/4
+                        else:
+                            err = 0
+                        erreur_rec.append(err)
+                    #print(erreur_rec)
+                    C_appearance = 0
+                    for i in erreur_rec:
+                        C_appearance = C_appearance+i
+                    print("C_appearance = ",C_appearance)
+                    # ----------------------------------------------------------------------------------------------------------------
+
+            # ---------------------------------------------------- Symbolic Sequence segmentation step by step ------------------------------------------------------
+                    serie=np.array(serie)
+                    serie_seg = []
+                    if first in locp['max']:
+                        ideb = locp['max'][fr-1]
+                        for ifin in locp['max'][fr-1+1:fr-1+4]:
+                            s_s = serie[ideb-locp['max'][fr-1]:ifin-locp['max'][fr-1]]
+                            se_se = []
+                            for k in s_s:
+                                if k not in se_se:
+                                    se_se.append(k)
+                                elif k!=se_se[-1]:
+                                    se_se.append(k)
+                            s_s = se_se
+                            if ideb!=locp['max'][fr-1] and serie_seg != [] and s_s[0] == serie_seg[-1][-1]:
+                                if (serie_seg[-1][-1] == serie_seg[-1][0]) or (serie_seg[-1][-1] == serie_seg[-1][1] and serie_seg[-1][0]==0):
+                                    serie_seg[-1].pop(-1)
+                                    serie_seg.append(s_s)
+                                elif s_s[1:]!=[]:
+                                    serie_seg.append(s_s[1:])
+                            else:
+                                serie_seg.append(s_s)
+                            ideb=ifin
+                    else:
+                        ideb = locp['min'][fr-1]
+                        for ifin in locp['min'][fr-1+1:fr-1+4]:
+                            s_s = serie[ideb-locp['min'][fr-1]:ifin-locp['min'][fr-1]]
+                            se_se = []
+                            for k in s_s:
+                                if k not in se_se:
+                                    se_se.append(k)
+                                elif k!=se_se[-1]:
+                                    se_se.append(k)
+                            s_s = se_se
+                            if ideb!=locp['min'][fr-1] and serie_seg != [] and s_s[0] == serie_seg[-1][-1]:
+                                if (serie_seg[-1][-1] == serie_seg[-1][0]) or (serie_seg[-1][-1] == serie_seg[-1][1] and serie_seg[-1][0]==0):
+                                    serie_seg[-1].pop(-1)
+                                    serie_seg.append(s_s)
+                                elif s_s[1:]!=[]:
+                                    serie_seg.append(s_s[1:])
+                            else:
+                                serie_seg.append(s_s)
+                            ideb=ifin
+            # -------------------------------------------------------------------------------------------------------------------------------------------------
+
+                    # Removing useless first states if necessary 
+                    for i in serie_seg:
+                        for j in serie_seg:
+                            if j != i and len(i)>1 and len(j)>0 and i[-1]==j[0]:
+                                i[-1]=0
+
+            # ----------------------------------- Searching for states that appears exactly 3 times in the symbolic sequence ----------------------------------
+                    f1={}
+                    for indice, i in enumerate(serie_seg):
+                        for j in i:
+                            ok = 0
+                            if i.count(j)==2 and j!=0:
+                                for m in range(len(i)-2):
+                                    if i[m] == j and i[m+1] == 0 and i[m+2] == j:
+                                        ok = 1
+                                        i[m+2] = 0
+                                if i[0]==j and i[-1]==j:
+                                    ok=1
+                                    if i!=serie_seg[-1] and serie_seg[indice+1][0]!=j:
+                                        serie_seg[indice+1].insert(0,j)
+                                    i[-1]==0
+                                if (i[0]==0 and i[1]==j) and (i[-1]==j or (i[-1]==0 and i[-2]==j)) or (i[0] == j and (i[-2] == j and i[-1] == 0)):
+                                    ok = 1
+                                    if i[-2]==j:
+                                        if j in f1:
+                                            f1[j] = f1[j]+1
+                                        else:
+                                            f1[j]=1
+                                    elif i[-1]==j and i!=serie_seg[-1] and serie_seg[indice+1][0]!=j:
+                                        serie_seg[indice+1].insert(0,j)
+                                    premier_indice = i.index(j)
+                                    deuxieme_indice = i.index(j, premier_indice + 1)
+                                    i[deuxieme_indice] = 0
+                            if i.count(j)==3 and j!=0:
+                                for m in range(len(i)-4):
+                                    if i[m] == j and i[m+1] == 0 and i[m+2] == j and i[m+3] == 0 and i[m+4] == j:                                               
+                                        ok = 1
+                                        i[m+2] = 0
+                                        i[m+4] = 0
+
+                            if j!=0 and (i.count(j)==1 or ok==1):
+                                if j in f1:
+                                    f1[j] = f1[j]+1
+                                else:
+                                    f1[j]=1
+                            else:
+                                f1[j] = 1000
+                            for k in f1:
+                                if k not in i and f1[k] <= indice:
+                                    f1[k] = 1000
+            # -----------------------------------------------------------------------------------------------------------------------------------
+
+            # -------------------------------------------------- C_deviation --------------------------------------------------------------------
+                    etype={}
+                    for h in f1:
+                        if f1[h] >= 3 and f1[h]<5 and h<len(distance):
+                            ecart_type = np.std(distance[h])
+                            etype[h] = ecart_type
+                        elif f1[h]==5 and f[h] < 5:
+                            ecart_type = np.std(distance[h])
+                            etype[h] = ecart_type
+                    if len(etype)!=0:
+                        C_deviation=0
+                        for key in etype:
+                            C_deviation = C_deviation+etype[key]
+                        C_deviation = C_deviation/len(etype)
+                        print("C_deviation = ",C_deviation)
+                    else:
+                        C_deviation = 100
+                        print("C_deviation = Impossible")
+            # -----------------------------------------------------------------------------------------------------------------------------------
+
+                    # ------------------------------------- Symbolic serie with states merged in a unique symbol --------------------------------
+                    serie = np.array(serie)
+                    serie = serie.astype(int)
+                    order = [] # Order = Symbolic serie with states merged in 1 symbol
+                    for i in range(len(serie)-1):
+                        if i == 0:
+                            order.append(serie[i])
+                        if serie[i]!=serie[i+1]:
+                            order.append(serie[i+1])
+                    print("")
+                    print("New symbolic sequence = ",order)
+                    print("")
+                    # --------------------------------------------------------------------------------------------------------------------------
+
+                    # -------------------------------------------------------------- C_Lempel-Ziv ----------------------------------------------
+
+                    # Search if a symbolic pattern is in a symbolic sequence
+                    def pattern_in_serie(w, s):
+                        w_str = ''
+                        s_str = ''
+                        for a in w:
+                            w_str=w_str+str(a)
+                        for b in s:
+                            s_str = s_str+str(b)
+                        return s_str in w_str
+
+                    C_LZ = 0
+                    i = 0
+                    W_LZ = []
+                    W_LZ.append(order[i])
+                    i = 1
+                    while i < len(order):
+                        j = i
+                        Bool = pattern_in_serie(W_LZ[:j], str(order[j]))
+                        if Bool == False:
+                            W_LZ.append(str(order[i]))
+                            i = i + 1
+                        else:
+                            while Bool == True:
+                                j = j + 1
+                                if j >= len(order):
+                                    break
+                                Bool = pattern_in_serie(W_LZ[:j], order[i:j + 1])
+                            W_LZ.append(''.join(map(str, order[i:j + 1])))
+                            i = j + 1
+                    C_LZ = len(W_LZ)
+                    C_LZ_n = C_LZ/len(order)
+                    print("C_Lempel-Ziv = ",C_LZ)
+                    # --------------------------------------------------------------------------------------------------------------------------
+
+                    #----------------------------------------------------- C_2 -----------------------------------------------------------------
+                    a=0
+                    C_2 = 0
+                    ser = order.copy()
+                    w_ser = ser.copy()
+                    # Searching for maximum length's recurrent serie
+                    while(len(ser)!=0): 
+                        max_serie = ''
+                        best_max_serie = ''
+                        j=0
+                        i=0
+                        i2=0
+                        while i < len(ser):
+                            if str(ser[i]) != '0' and str(ser[i]) not in max_serie:
+                                max_serie = max_serie+str(ser[i])
+                                ser_str = ''
+                                for p in ser:
+                                    ser_str=ser_str+str(p)
+                                count=0 
+                                rec=0
+                                if max_serie in ser_str:
+                                    rec=ser_str.count(max_serie)
+                                if len(max_serie)>len(best_max_serie) and rec>1 and len(max_serie)<=len(ser)/2:
+                                    best_max_serie = max_serie
+                                    i=j
+                                elif len(max_serie)>=len(ser)/2 and len(max_serie)>len(best_max_serie) and rec==1:
+                                    best_max_serie = max_serie
+                                    i=j
+                            elif str(ser[i]) == '0':
+                                max_serie = max_serie+str(ser[i])
+                                ser_str = ''
+                                for p in ser:
+                                    ser_str=ser_str+str(p)
+                                count=0 
+                                rec=0
+                                if max_serie in ser_str:
+                                    rec=ser_str.count(max_serie)
+                                if len(max_serie)>len(best_max_serie) and rec>1 and len(max_serie)<=len(ser)/2:
+                                    best_max_serie = max_serie
+                                    i=j
+                                elif len(max_serie)>len(ser)/2 and len(max_serie)>len(best_max_serie) and rec==1:
+                                    best_max_serie = max_serie
+                                    i=j
+                            else:
+                                max_serie=''
+                                i2=i2+1
+                                i=i2-1
+                                j=i
+                            i=i+1
+                            j=j+1
+
+                        for i in range(len(w_ser)):
+                            c=0
+                            ws = ''
+                            windx = []
+                            for j in range(len(best_max_serie)):
+                                if i+j < len(w_ser):
+                                    if w_ser[i+j] == int(best_max_serie[j]):
+                                        ws=ws+str(w_ser[i+j])
+                                        windx.append(i+j)
+                                        c = c+1
+                            if c==len(best_max_serie):
+                                break
+                        if windx != []:
+                            ind = windx[0]
+                        else:
+                            ind = 0
+                        for i in windx: 
+                            w_ser.pop(i)
+                            for j in range(len(windx)):
+                                windx[j]=windx[j]-1
+                        C_2 = C_2+1
+                        ws = ''.join(map(str, w_ser))
+                        if best_max_serie in ws[:ind]:
+                            ws = ws.replace(best_max_serie, '')
+                            w_ser = [int(c) for c in ws]
+                        if best_max_serie in ws[ind:]:
+                            ws = ws.replace(best_max_serie, '')
+                            w_ser = [int(c) for c in ws]
+                        ser=w_ser
+                        a=a+1
+                    # --------------------------------------------------------------------------------------------------------------------------
+
+                    #----------------------------------------------------- C_1 -----------------------------------------------------------------
+                    C_1 = 0
+                    ser = order.copy()
+                    store = []
+                    store_str = ''
+                    i=0
+                    while i < len(ser):
+                        if str(ser[i]) != '0' and str(ser[i]) not in store_str:
+                            store_str = store_str+str(ser[i])
+                            ser.pop(i)
+                        elif str(ser[i]) == '0':
+                            store_str = store_str+str(ser[i])
+                            ser.pop(i)
+                        else:
+                            store.append(store_str)
+                            store_str=''
+                        if len(ser) == 0:
+                            store.append(store_str)
+                    conf = 0
+                    #print("\nstore = ",store)
+                    for i in range(len(store[:-1])):
+                        if store[-1] in store[i][:len(store[-1])]:
+                            conf = 1
+                        if store[i][0] == '0':
+                            store[i] = store[i][1:]
+                    if conf == 1:
+                        store.pop(-1)
+                    C_1 = len(np.unique(store))
+                    #print("store suppr = ",store)
+                    print("C_1 = ",C_1)
+                    print("C_2 = ",C_2)
+                    print("")
+                    print("")
+                    # --------------------------------------------------------------------------------------------------------------------------
+
 
               while(True):
                 s = input("\nContinue with this/these joint(s) ? (Y/n): ")
@@ -895,569 +1288,5 @@ def rascopy(loop = None, joints=None, dimens=None, bound=None, meth=None, feat=N
             break
           elif finish.lower() == 'y':
             break
-
-
-  else:
-    fin = ''
-    while(fin != 'y'):
-      name=input("Wich dataset.json ? ")
-      data = joblib.load(name+".json")
-      start_vid = input("Enter the number of the start vid : ")
-      start_vid = int(start_vid)
-      for i in range(start_vid, len(data)):
-        passer = 0
-        vid,vale = list(data.items())[i]
-        x,diag,sex,di = open_json(data, vid)
-        if 'Healthy' in diag:
-          passer = 1
-        if passer == 0:
-          nam = get_kinectv2_joint_names()
-          v = ''
-          while(v!='n'):
-            condition = 0
-            ctrl=0
-            stop=''
-            while(condition!=1):
-              if joints == None:          
-                mean_single = input("\nSingle joint or joint's mean analysis ? (s/m): ")
-                if mean_single.lower() == 's':
-                  cotrl=0
-                  while(cotrl!=1):
-                    a = input("\nWhich joint to you want to analyze ? (number bewteen 0 and 24): ")
-                    ctrl=0
-                    for char in a:
-                      if (ord(char)<48 or ord(char)>57) and ord(char)!=44:
-                        ctrl=ctrl+1
-                      elif (ord(char)>=48 and ord(char)<=57) or ord(char)==44:
-                        ctrl=ctrl
-                    if ctrl == 0 and a!='' and len(a)<=2:
-                      if int(a)>=0 and int(a)<25:
-                        back_file = name+"_"+vid+"_"+a
-                        a = int(a)
-                        xyz = x[a, :, :]
-                        T=xyz.shape[0]
-                        condition=1
-                        cotrl=1
-
-                elif mean_single.lower() == 'm':
-                  while(True):
-                    a = input("\nWhich joints to you want to analyze ? (numbers bewteen 0 and 24 separated by ','): ")
-                    ctrl=0
-                    for char in a:
-                      if (ord(char)<48 or ord(char)>57) and ord(char)!=44:
-                        ctrl=ctrl+1
-                      elif (ord(char)>=48 and ord(char)<=57) or ord(char)==44:
-                        ctrl=ctrl
-                    if ctrl == 0 and a!='' and a[-1]!=',':
-                      a_list = []
-                      cond=0
-                      for string in a.split(','):
-                        if int(string)>0 and int(string)<25:
-                          cond = cond
-                        else:
-                          cond=cond+1
-                      if cond == 0:
-                        nm=''
-                        for string in a.split(','):
-                          a_list.append(int(string))
-                          nm = nm+string
-                        back_file = name+"_"+vid+"_mean_"+nm
-                        xyz = np.mean(x[a_list,:,:],axis=0)
-                        T=xyz.shape[0]
-                        condition=1
-                        break
-                      else:
-                        print('Error in the number of the joints')
-                    else:
-                      print('Error in the number of the joints')
-              else:
-                a=joints
-                if ',' in a:
-                  mean_single = 'm'
-                else:
-                  mean_single = 's'
-                ctrl=0
-                for char in a:
-                  if (ord(char)<48 or ord(char)>57) and ord(char)!=44:
-                    ctrl=ctrl+1
-                  elif (ord(char)>=48 and ord(char)<=57) or ord(char)==44:
-                    ctrl=ctrl
-                if ctrl == 0 and a!='' and a[-1]!=',':
-                  a_list = []
-                  cond=0
-                  for string in a.split(','):
-                    if int(string)>0 and int(string)<25:
-                      cond = cond
-                    else:
-                      cond=cond+1
-                  if cond == 0:
-                    nm=''
-                    for string in a.split(','):
-                      a_list.append(int(string))
-                      nm = nm+string
-                    back_file = name+"_"+vid+"_mean_"+nm
-                    xyz = np.mean(x[a_list,:,:],axis=0)
-                    T=xyz.shape[0]
-                    condition=1
-
-            c=0
-            control=0
-
-            while(control!=1):
-              c=c+1
-              if not os.path.exists(f'{back_file}'):
-                with open(back_file, 'w') as fichier:
-                  fichier.write("Analysis of a "+sex+" people. \nStage : "+diag+".\n\n")
-                print(back_file," succesfully created !")
-                break
-              elif c==1:
-                    while(True):
-                      rep = input(f"The file '{back_file}' already exists. Do you want to add your new analysis inside? (Y/n): ")
-                      if rep.lower() == 'n':
-                        rep1 = input(f"Do you want to erase existing '{back_file}'? (Y/n): ")
-                        if rep1.lower() == 'y':
-                          with open(back_file, 'w') as fichier:
-                            fichier.write("Analysis of a "+sex+" people. Stage : "+diag+".")
-                            control = 1
-                          break
-                        elif rep1.lower() == 'n':
-                          back_file=back_file+'_'+str(c)
-                          break
-                      elif rep.lower() == 'y':
-                        control = 1
-                        break
-              else :
-                back_file=back_file[:-1]+str(c)
-              
-            if condition == 1:
-              while(stop!='s'):
-                plt.figure()
-                times = np.linspace(0,T,T)
-                plt.plot(times, xyz[:,0], color='red', label='X coordinate')
-                plt.plot(times, xyz[:,1], color='blue', label = 'Y coordinate')
-                plt.plot(times, xyz[:,2], color='green', label = 'Z coordinate')
-                plt.xlabel('Time')
-                plt.ylabel('Position')
-                if mean_single == 's':
-                  plt.title(f"{nam[int(a)]}'s mouvement on each coordinate")
-                elif mean_single == 'm':
-                  nom=''
-                  for n in a_list:
-                    nom = nom+nam[n]+', '
-                  plt.title(f"Mouvement's mean of {nom} on each coordinate")
-                plt.legend()
-                plt.show(block=False)
-
-                if dimens == None:
-                  while(True):
-                    dimensions = input("\nIn which dimensions do you want to analyze ? (2 or 3): ")
-                    if dimensions.isdigit() and dimensions!="":
-                      if int(dimensions)==2 or int(dimensions)==3:
-                        dimensions=int(dimensions)
-                        break
-                      else:
-                        print("Dimensions should be 2 or 3.")
-                    else:
-                      print("Dimensions should be 2 or 3.")
-                else:
-                  dimensions = int(dimens)
-                if dimensions == 2:
-                  verif=1
-                  while(verif!=0):
-                    dim = input("\nWhich axis do you want to analyze ? (x, y, or z separated by a ','): ")
-                    ctrl=0
-                    for char in dim:
-                      if (char != 'x' and char != 'y' and char != 'z' and char != ','):
-                        ctrl=ctrl+1
-                      elif (char == 'x' or char == 'y' or char == 'z' or char == ','):
-                        ctrl=ctrl
-                    if ctrl == 0 and dim!='' and dim[-1]!=',' and len(dim)==3 and dim[0]!=',':
-                      verif = 0
-                      coord_list = []
-                      for string in dim.split(','):
-                        if string == 'x':
-                          coord_list.append(0)
-                        elif string == 'y':
-                          coord_list.append(1)
-                        elif string == 'z':
-                          coord_list.append(2)
-                      y = xyz[:,coord_list]
-                      xy = xyz[:,:]
-                      if os.path.exists(f'{back_file}'):
-                        with open(back_file, 'r') as f:
-                          for ligne in f:
-                            if '------------------ '+str(dim[0])+str(dim[2])+' axis analysis------------------' in ligne:
-                              recherche = True
-                            else:
-                              recherche = False
-                        if recherche == False:
-                          with open(back_file, 'a') as fichier:
-                            fichier.write("\n------------------ "+str(dim[0])+str(dim[2])+" axis analysis------------------\n")
-                else:
-                  y = xyz
-                  xy = xyz
-                  with open(back_file, 'a') as fichier:
-                    fichier.write("\n------------------ "+str(dimensions)+"D analysis ------------------\n")
-                
-                start_frame = None
-                end_frame = None
-                if bound==None:
-                  while(True):
-                    fr = input("\nEnter the video bound frames (separated by a ',') : ")
-                    if fr == "":
-                      break
-                    else:
-                      c=0
-                      for char in fr.split(","):
-                        if char.isdigit():
-                          c=c+1
-                          if c==1:
-                            start_frame=int(char)
-                          if c==2:
-                            end_frame=int(char)
-                      if c==2:
-                        break
-                else:
-                  if bound!='':
-                    c=0
-                    for char in bound.split(","):
-                      if char.isdigit():
-                        c=c+1
-                        if c==1:
-                          start_frame=int(char)
-                        if c==2:
-                          end_frame=int(char)
-                if start_frame!=None and end_frame!=None:
-                  y=y[start_frame:end_frame,:]
-                  xy=xyz[start_frame:end_frame,:]
-                elif start_frame==None and end_frame!=None:
-                  y=y[:end_frame,:]
-                  xy=xyz[:end_frame,:]
-                elif start_frame!=None and end_frame==None:
-                  y=y[start_frame:,:]
-                  xy=xyz[start_frame:,:]
-
-                if meth == None:    
-                  while(True):
-                    method = input("\nWhich optimal epsilon method ? ")
-                    if method.isdigit() == True:
-                      break
-                    else: 
-                      print("method should be a number")
-                else:
-                  method = meth
-                method = int(method)
-                if feat == None:
-                  visu = input("\nEnter the numbers of the features you want to visualize (separated by ','): ")
-                else:
-                  visu = feat
-                visu_list = []
-                for string in visu.split(','):
-                  visu_list.append(string)
-                
-                if("1" in visu_list):
-                  plt.figure()
-                  Ty=y.shape[0]
-                  times = np.linspace(0,Ty,Ty)
-                  if y.shape[1] == 3:
-                    plt.plot(times, y[:,0], color='red', label='X coordinate')
-                    plt.plot(times, y[:,1], color='blue', label = 'Y coordinate')
-                    plt.plot(times, y[:,2], color='green', label = 'Z coordinate')
-                  if y.shape[1] == 2:
-                    plt.plot(times, y[:,0], color='red', label=f'{dim[0]} coordinate')
-                    plt.plot(times, y[:,1], color='blue', label = f'{dim[2]} coordinate')
-                  if y.shape[1] == 1:
-                    plt.plot(times, y[:,0], color='red', label=f'{dim[0]} coordinate')
-                  plt.xlabel('Time')
-                  plt.ylabel('Position')
-                  if mean_single == 's':
-                    plt.title(f"{nam[int(a)]}'s mouvement on each coordinate")
-                  elif mean_single == 'm':
-                    nom=''
-                    for n in a_list:
-                      nom = nom+nam[n]+', '
-                    plt.title(f"Mouvement's mean of {nom} on each coordinate")
-                  plt.legend()
-                  plt.show(block=False)
-                  while(True):
-                    rep = input("\nDo you want to save this plot ? (Y/n): ")
-                    if rep.lower() == 'y':
-                      while True:
-                        name_file = input("Please, give a name to your plot: ")
-                        if not os.path.exists(f'{name_file}.png'):
-                          break
-                        else:
-                            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-                        if rep2.lower() == 'y':
-                          break
-                      plt.savefig(f'{name_file}.png')
-                      print("Plot has been successfully saved")
-                      break
-                    elif rep.lower() == 'n':
-                      break
-
-                if("2" in visu_list):
-                  fig = plt.figure()
-                  if y.shape[1] == 3:
-                    ax = fig.add_subplot(111, projection='3d')
-                    ax.plot(y[:, 0], y[:, 1], y[:, 2], color='blue', label='Trajectory')
-                    ax.set_xlabel('X')
-                    ax.set_ylabel('Y')
-                    ax.set_zlabel('Z')
-                    plt.title('Trajectory in 3D')
-                  if y.shape[1] == 2:
-                    plt.plot(y[:, 0], y[:, 1], color='blue', label='Trajectory')
-                    plt.xlabel(dim[0])
-                    plt.ylabel(dim[2])
-                    plt.title('Trajectory in 2D')
-                  plt.show(block=False)
-                  while(True):
-                    rep = input("\nDo you want to save this plot ? (Y/n): ")
-                    if rep.lower() == 'y':
-                      while True:
-                        name_file = input("Please, give a name to your plot: ")
-                        if not os.path.exists(f'{name_file}.png'):
-                          break
-                        else:
-                            rep2 = input(f"The file '{name_file}.png' already exists. Do you want to replace it ? (Y/n): ")
-                        if rep2.lower() == 'y':
-                          break
-                      plt.savefig(f'{name_file}.png')
-                      print("Plot has been successfully saved")
-                      break
-                    elif rep.lower() == 'n':
-                      break
-
-                if("3" in visu_list):
-                  recurrence.anim_traj(y)
-
-                step = 0.001
-                test2=1
-
-                if("4" in visu_list):
-                  if method == 0:
-                    epsi = opti_epsi.epsi_entropy(y, step, 1, back_file)
-                    test=1
-                  elif method == 1:
-                    epsi = opti_epsi.epsi_utility(y, step,1, back_file)
-                    test=1
-                  elif method == 2:
-                    entropy = opti_epsi.epsi_entropy(y, step,1, back_file)
-                    utility = opti_epsi.epsi_utility(y, step,1, back_file)
-                    epsi = (entropy+utility)/2
-                    test=1
-                  elif method == 3:
-                    epsi = opti_epsi.opti_epsi_phifct(y,step,1,back_file)
-                    test=1
-                  elif method == 4:
-                    test=0
-                  elif method == 5:
-                    epsi, alpha_des, word_des, Lz_des_min, Lz_des_max = opti_epsi.opti_epsi_phi(y, xy, y.shape[0], step, 1, back_file)
-                    test=1
-                  else:
-                    print("Method doesn't exist")
-                    test=2
-                    test2=2
-
-                else:
-                  if method == 0:
-                    epsi = opti_epsi.epsi_entropy(y, step)
-                    test=1
-                  elif method == 1:
-                    epsi = opti_epsi.epsi_utility(y, step)
-                    test=1
-                  elif method == 2:
-                    entropy = opti_epsi.epsi_entropy(y, step)
-                    utility = opti_epsi.epsi_utility(y, step)
-                    epsi = (entropy+utility)/2
-                    test=1
-                  elif method == 3:
-                    epsi = opti_epsi.opti_epsi_phifct(y,step)
-                    test=1
-                  elif method == 4:
-                    test=0
-                  elif method == 5:
-                    epsi, alpha_des, word_des, Lz_des_min, Lz_des_max = opti_epsi.opti_epsi_phi(y, xy, y.shape[0], step)
-                    test=1
-                  else:
-                    print("Method doesn't exist")
-                    test=2
-                    test2=2
-
-                while test==0:
-                  while(True):
-                    epsilon = input("\nPlease enter your epsilon value: ")
-                    try:
-                      float(epsilon)
-                      tr = True
-                    except ValueError:
-                      tr = False
-                    if tr == True:
-                      break
-                    else:
-                      print("Epsilon should be a float")
-                      
-                  epsi = float(epsilon)
-                  if("5" in visu_list):
-                    R = recurrence.rec_mat(y, epsi,1,back_file)
-                  else:
-                    R = recurrence.rec_mat(y, epsi)
-                  if("6" in visu_list):
-                    recurrence.rec_plt(R)
-                  if("7" in visu_list):
-                    serie = symbolic_series.symbolic_serie(R,1, back_file)
-                  else:
-                    serie = symbolic_series.symbolic_serie(R)
-                  if("8" in visu_list):
-                    symbolic_series.colored_sym_serie(serie,y)
-                  if("9" in visu_list):
-                    recurrence.col_rec_plt(serie, R)
-                  if("10" in visu_list):
-                    symbolic_series.plot_col_traj(serie,y)
-                  if("11" in visu_list):
-                    C_alphabet_size, C_nbr_words, C_LZ, score, regularity = symbolic_series.complexity(y,xy,serie,1,back_file)
-                    clz = symbolic_series.lempel_ziv(serie,1)
-
-                  ans = input("\nAre these results satisfying ? (Y/n): ")
-                  if ans.lower() == 'y':
-                    test=1
-                    test2=0
-
-                if epsi is not None:
-                  if test == 1 and test2==1:
-                    if("5" in visu_list):
-                      R = recurrence.rec_mat(y, epsi,1,back_file)
-                    else:
-                      R = recurrence.rec_mat(y, epsi)
-                    if("6" in visu_list):
-                      recurrence.rec_plt(R)
-                    if("7" in visu_list):
-                      serie = symbolic_series.symbolic_serie(R,1,back_file)
-                    else:
-                      serie = symbolic_series.symbolic_serie(R)
-                      uniqSerie = np.unique(serie)
-                    if("8" in visu_list):
-                      symbolic_series.colored_sym_serie(serie,y)
-                    if("9" in visu_list):
-                      recurrence.col_rec_plt(serie, R)
-                    if("10" in visu_list):
-                      symbolic_series.plot_col_traj(serie,y)
-                    if("11" in visu_list):
-                      print("\n(Targets : Alphabet Size : ",alpha_des," | Number of words : ",word_des, " | Lempel-Ziv : [",Lz_des_min,";",Lz_des_max,"]")
-                      C_alphabet_size, C_nbr_words, C_LZ, score, regularity = symbolic_series.complexity(y,xy, serie,1,back_file)
-                      clz = symbolic_series.lempel_ziv(serie,1)
-                      if di == 0:
-                        donnees = pd.read_excel('label_info_120.xlsx')
-                        if a+',R' in donnees.columns:
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          if ligne[a+',R'].isna().all():
-                            donnees.loc[ligne.index, a+',R'] = round(regularity,2)
-                            donnees.to_excel('label_info_120.xlsx', index=False)
-                          else:
-                            while(True):
-                              resp = input("Do you want to erase previous regularity value ? (Y/n): ")
-                              if resp.lower()=='y':
-                                donnees.loc[ligne.index, a+',R'] = round(regularity,2)
-                                donnees.to_excel('label_info_120.xlsx', index=False)
-                                break
-                              elif resp.lower()=='n':
-                                break
-                        else:
-                          donnees[a+',R'] = np.nan
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          donnees.loc[ligne.index, a+',R'] = round(regularity,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)
-
-                        if a+',C' in donnees.columns:
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          if ligne[a+',C'].isna().all():
-                            donnees.loc[ligne.index, a+',C'] = round(score,2)
-                            donnees.to_excel('label_info_120.xlsx', index=False)
-                          else:
-                            while(True):
-                              resp = input("Do you want to erase previous correspondance value ? (Y/n): ")
-                              if resp.lower()=='y':
-                                donnees.loc[ligne.index, a+',C'] = round(score,2)
-                                donnees.to_excel('label_info_120.xlsx', index=False)
-                                break
-                              elif resp.lower()=='n':
-                                break
-                        else:
-                          donnees[a+',C'] = np.nan
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          donnees.loc[ligne.index, a+',C'] = round(score,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)  
-
-                        if a+',clz' in donnees.columns:
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          if ligne[a+',clz'].isna().all():
-                            donnees.loc[ligne.index, a+',clz'] = round(clz,2)
-                            donnees.to_excel('label_info_120.xlsx', index=False)
-                          else:
-                            while(True):
-                              resp = input("Do you want to erase previous clz value ? (Y/n): ")
-                              if resp.lower()=='y':
-                                donnees.loc[ligne.index, a+',clz'] = round(clz,2)
-                                donnees.to_excel('label_info_120.xlsx', index=False)
-                                break
-                              elif resp.lower()=='n':
-                                break
-                        else:
-                          donnees[a+',clz'] = np.nan
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          donnees.loc[ligne.index, a+',clz'] = round(clz,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)   
-
-                        if a+',CLZ' in donnees.columns:
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          if ligne[a+',CLZ'].isna().all():
-                            donnees.loc[ligne.index, a+',CLZ'] = round(C_LZ,2)
-                            donnees.to_excel('label_info_120.xlsx', index=False)
-                          else:
-                            while(True):
-                              resp = input("Do you want to erase previous CLZ value ? (Y/n): ")
-                              if resp.lower()=='y':
-                                donnees.loc[ligne.index, a+',CLZ'] = round(C_LZ,2)
-                                donnees.to_excel('label_info_120.xlsx', index=False)
-                                break
-                              elif resp.lower()=='n':
-                                break
-                        else:
-                          donnees[a+',CLZ'] = np.nan
-                          ligne = donnees.loc[donnees['vidname'] == vid]
-                          donnees.loc[ligne.index, a+',CLZ'] = round(C_LZ,2)
-                          donnees.to_excel('label_info_120.xlsx', index=False)               
-                  
-                  if test!=2 and test2!=2 and "11" in visu_list:
-                    while(True):
-                      shuf = input("\nDo you want to analyse the regularity ? (Y/n): ")
-                      if shuf.lower() == 'y':
-                        symbolic_series.regularity_shuffle(regularity, serie, back_file)
-                        break
-                      elif shuf.lower() == 'n':
-                        break
-
-                while(True):
-                  s = input("\nContinue with this/these joint(s) ? (Y/n): ")
-                  if s.lower() == 'y':
-                    break
-                  elif s.lower() == 'n':
-                    stop='s'
-                    break 
-
-            while(True):
-              v = input("\nContinue with this video ? (Y/n): ")
-              if v.lower() == 'n':
-                break
-              elif v.lower() == 'y':
-                break  
-
-      while(True):
-        finish = input("\nOther analysis ? (Y/n): ")
-        if finish.lower() == 'n':
-          fin = 'y'
-          break
-        elif finish.lower() == 'y':
-          break
         
 
