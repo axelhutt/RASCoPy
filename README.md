@@ -214,58 +214,58 @@ MAIN FUNCTION OF THE PACKAGE :
 ****************************************************************************************************************************************************************************************************************
 
 These are the numbers attributed to each method to determine the optimal epsilon :
-0 : entropy
-1 : utility function
-2 : mean of entropy and utility
-3 : phi function
-4 : normalized entropy
-5 : test_epsi
+0 : entropy;
+1 : utility function;
+2 : mean of entropy and utility;
+3 : phi function;
+4 : normalized entropy;
+5 : test_epsi;
 
 ****************************************************************************************************************************************************************************************************************
 **********************************************************************************Features**********************************************************************************
 ****************************************************************************************************************************************************************************************************************
 
 These are the numbers attributed to each feature of the analysis process :
-1 : 1, 2 or 3 coordinates function of time plot
-2 : 1, 2 or 3D Trajectory
-3 : Animated 2D or 3D trajectory
-4 : Epsilon results (plot (for entropy and utility functions) and value)
-5 : Recurrence matrix
-6 : Recurrence plot
-7 : Symbolic serie
-8 : Colored symbolic serie
-9 : Colored recurrence plot
-10 : Colored 1, 2 and/or 3D trajectory 
-11 : Complexity measures
+1 : 1, 2 or 3 coordinates function of time plot;
+2 : 1, 2 or 3D Trajectory;
+3 : Animated 2D or 3D trajectory;
+4 : Epsilon results (plot (for entropy and utility functions) and value);
+5 : Recurrence matrix;
+6 : Recurrence plot;
+7 : Symbolic serie;
+8 : Colored symbolic serie;
+9 : Colored recurrence plot;
+10 : Colored 1, 2 and/or 3D trajectory;
+11 : Complexity measures;
 
 ***************************************************************************************************************************************************************************************************************
 **********************************************************************************Joints**********************************************************************************
 ***************************************************************************************************************************************************************************************************************
 
-0 : Spine Base
-1 : Spine Mid
-2 : Neck
-3 : Head
-4 : Shoulder Left
-5 : Elbow Left
-6 : Wrist Left
-7 : Hand Left
-8 : Shoulder Right
-9 : Elbow Right
-10 : Wrist Right
-11 : Hand Right
-12 : Hip Left
-13 : Knee Left
-14 : Ankle Left
-15 : Foot Left
-16 : Hip Right
-17 : Knee Right
-18 : Ankle Right
-19 : Foot Right
-20 : Spine-Shoulder intersection 
-21 : Hand Tip Left
-22 : Thumb Left
-23 : Hand Tip Right
-24 : Thumb Right
+0 : Spine Base;
+1 : Spine Mid;
+2 : Neck;
+3 : Head;
+4 : Shoulder Left;
+5 : Elbow Left;
+6 : Wrist Left;
+7 : Hand Left;
+8 : Shoulder Right;
+9 : Elbow Right;
+10 : Wrist Right;
+11 : Hand Right;
+12 : Hip Left;
+13 : Knee Left;
+14 : Ankle Left;
+15 : Foot Left;
+16 : Hip Right;
+17 : Knee Right;
+18 : Ankle Right;
+19 : Foot Right;
+20 : Spine-Shoulder intersection; 
+21 : Hand Tip Left;
+22 : Thumb Left;
+23 : Hand Tip Right;
+24 : Thumb Right;
 
 
