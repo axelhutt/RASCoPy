@@ -20,7 +20,7 @@ Physical Review Letters 110: 154101 (2013)
 
 
 ******************************************************************************************************************************************************************************************************************
-****************************************************************!! Five main codes are provided !!****************************************************************
+****************************************************************!! Five main codes are provided in Final_codes !!****************************************************************
 
 * **rascopy.py**: Permits to make single recurrence and complexity analyses on a unique video. The program asks you to choose the parameters of the analysis and the features to visualize. To run it: "import rascopy; rascopy.rascopy()".
   
