@@ -20,7 +20,7 @@ Physical Review Letters 110: 154101 (2013)
 
 
 ******************************************************************************************************************************************************************************************************************
-****************************************************************!! Five main codes are provided in Final_codes !!****************************************************************
+****************************************************************!! Six main codes are provided in Final_codes !!****************************************************************
 
 * **rascopy.py**: Permits to make single recurrence and complexity analyses on a unique video. The program asks you to choose the parameters of the analysis and the features to visualize. To run it: "import rascopy; rascopy.rascopy()".
   
@@ -31,6 +31,8 @@ Physical Review Letters 110: 154101 (2013)
 * **surrogate.ipynb**: This code permits to run a surrogate data test on classification accuracy values.
 
 * **Mann-whitney_2-sided**: This code permits to run a Mann-whitney 2-sided test on accuracy values contained in a .xlsx file.
+
+* **histogramme**: This code permits to plot histogramme representing the distribution of each labels (gait score or diagnosis) for each complexity measures.
 
 
 ******************************************************************************************************************************************************************************************************************
